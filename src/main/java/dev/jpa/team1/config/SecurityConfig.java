@@ -109,27 +109,10 @@ public class SecurityConfig {
 
         configuration.setAllowedOrigins(
                 List.of(
-                        // localhost 개발 / 배포 테스트
                         "http://localhost:5173",
                         "http://localhost:5174",
                         "http://localhost:3000",
-                        "http://localhost:8501",
-
-                        // 팀원 React 개발 서버
-                        "http://10.1.205.116:5173",
-                        "http://10.1.205.116:5174",
-                        "http://10.1.205.105:5174",
-                        "http://10.1.205.105:5173",
-                        "http://10.1.205.101:5174",
-                        "http://10.1.205.101:5173",
-                        
-                        
-                        "http://1.201.122.194:5173",
-
-                        // 팀원 React 배포 테스트 서버
-                        "http://10.1.205.116:3000",
-                        "http://10.1.205.105:3000",
-                        "http://10.1.205.101:3000"
+                        "http://localhost:8501"
                 )
         );
 
