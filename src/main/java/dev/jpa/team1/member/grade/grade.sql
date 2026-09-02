@@ -16,10 +16,10 @@ DROP SEQUENCE GRADE_SEQ;
 1. 시퀀스 생성
 ******************************************************************/
 
--- 1 ~ 10번은 기본 등급 번호로 직접 사용
--- 이후 새 등급 등록 시 11번부터 시작
+-- 1 ~ 4번은 기본 등급 번호로 직접 사용
+-- 이후 새 등급 등록 시 5번부터 시작
 CREATE SEQUENCE GRADE_SEQ
-START WITH 11
+START WITH 5
 INCREMENT BY 1
 MAXVALUE 99999
 CACHE 2
@@ -61,58 +61,11 @@ COMMENT ON COLUMN GRADE.CREATED_AT IS '등록일';
 4. 등록 CREATE
 
 등급 기준
-1 ~ 3  : ADMIN
-4 ~ 6  : USER
-7 ~ 9  : GOLD
-10     : VIP
+1 : USER
+2 : GOLD
+3 : VIP
+4 : ADMIN
 ******************************************************************/
-
--- 관리자 등급
-INSERT INTO GRADE (
-    GRADE_ID,
-    NAME,
-    DESCRIPTION,
-    VISIBLE,
-    CREATED_AT
-)
-VALUES (
-    1,
-    'ADMIN_1',
-    '관리자 1등급',
-    'Y',
-    SYSDATE
-);
-
-INSERT INTO GRADE (
-    GRADE_ID,
-    NAME,
-    DESCRIPTION,
-    VISIBLE,
-    CREATED_AT
-)
-VALUES (
-    2,
-    'ADMIN_2',
-    '관리자 2등급',
-    'Y',
-    SYSDATE
-);
-
-INSERT INTO GRADE (
-    GRADE_ID,
-    NAME,
-    DESCRIPTION,
-    VISIBLE,
-    CREATED_AT
-)
-VALUES (
-    3,
-    'ADMIN_3',
-    '관리자 3등급',
-    'Y',
-    SYSDATE
-);
-
 
 -- 일반 회원 등급
 INSERT INTO GRADE (
@@ -123,39 +76,9 @@ INSERT INTO GRADE (
     CREATED_AT
 )
 VALUES (
-    4,
-    'USER_1',
-    '일반 회원 1등급',
-    'Y',
-    SYSDATE
-);
-
-INSERT INTO GRADE (
-    GRADE_ID,
-    NAME,
-    DESCRIPTION,
-    VISIBLE,
-    CREATED_AT
-)
-VALUES (
-    5,
-    'USER_2',
-    '일반 회원 2등급',
-    'Y',
-    SYSDATE
-);
-
-INSERT INTO GRADE (
-    GRADE_ID,
-    NAME,
-    DESCRIPTION,
-    VISIBLE,
-    CREATED_AT
-)
-VALUES (
-    6,
-    'USER_3',
-    '일반 회원 3등급',
+    1,
+    'USER',
+    '일반 회원',
     'Y',
     SYSDATE
 );
@@ -170,39 +93,9 @@ INSERT INTO GRADE (
     CREATED_AT
 )
 VALUES (
-    7,
-    'GOLD_1',
-    'GOLD 회원 1등급',
-    'Y',
-    SYSDATE
-);
-
-INSERT INTO GRADE (
-    GRADE_ID,
-    NAME,
-    DESCRIPTION,
-    VISIBLE,
-    CREATED_AT
-)
-VALUES (
-    8,
-    'GOLD_2',
-    'GOLD 회원 2등급',
-    'Y',
-    SYSDATE
-);
-
-INSERT INTO GRADE (
-    GRADE_ID,
-    NAME,
-    DESCRIPTION,
-    VISIBLE,
-    CREATED_AT
-)
-VALUES (
-    9,
-    'GOLD_3',
-    'GOLD 회원 3등급',
+    2,
+    'GOLD',
+    '우수 회원',
     'Y',
     SYSDATE
 );
@@ -217,9 +110,26 @@ INSERT INTO GRADE (
     CREATED_AT
 )
 VALUES (
-    10,
+    3,
     'VIP',
-    'VIP 회원',
+    '최우수 회원',
+    'Y',
+    SYSDATE
+);
+
+
+-- 관리자 등급
+INSERT INTO GRADE (
+    GRADE_ID,
+    NAME,
+    DESCRIPTION,
+    VISIBLE,
+    CREATED_AT
+)
+VALUES (
+    4,
+    'ADMIN',
+    '관리자',
     'Y',
     SYSDATE
 );
@@ -261,46 +171,43 @@ SELECT
     VISIBLE,
     CREATED_AT
 FROM GRADE
+WHERE GRADE_ID = 1;
+
+
+/******************************************************************
+8. 일반 회원 등급 조회
+******************************************************************/
+
+SELECT *
+FROM GRADE
+WHERE GRADE_ID = 1;
+
+
+/******************************************************************
+9. GOLD 등급 조회
+******************************************************************/
+
+SELECT *
+FROM GRADE
+WHERE GRADE_ID = 2;
+
+
+/******************************************************************
+10. VIP 등급 조회
+******************************************************************/
+
+SELECT *
+FROM GRADE
+WHERE GRADE_ID = 3;
+
+
+/******************************************************************
+11. 관리자 등급 조회
+******************************************************************/
+
+SELECT *
+FROM GRADE
 WHERE GRADE_ID = 4;
-
-
-/******************************************************************
-8. 관리자 등급 조회
-******************************************************************/
-
-SELECT *
-FROM GRADE
-WHERE GRADE_ID BETWEEN 1 AND 3
-ORDER BY GRADE_ID ASC;
-
-
-/******************************************************************
-9. 일반 회원 등급 조회
-******************************************************************/
-
-SELECT *
-FROM GRADE
-WHERE GRADE_ID BETWEEN 4 AND 6
-ORDER BY GRADE_ID ASC;
-
-/**/
-/******************************************************************
-10. GOLD 등급 조회
-******************************************************************/
-
-SELECT *
-FROM GRADE
-WHERE GRADE_ID BETWEEN 7 AND 9
-ORDER BY GRADE_ID ASC;
-
-
-/******************************************************************
-11. VIP 등급 조회
-******************************************************************/
-
-SELECT *
-FROM GRADE
-WHERE GRADE_ID = 10;
 
 
 /******************************************************************
@@ -316,10 +223,6 @@ SELECT
 FROM GRADE
 WHERE VISIBLE = 'Y'
 ORDER BY GRADE_ID ASC;
-
-SELECT *
-FROM GRADE
-ORDER BY GRADE_ID;
 
 
 /******************************************************************

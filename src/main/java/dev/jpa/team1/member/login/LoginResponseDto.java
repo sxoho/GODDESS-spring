@@ -21,20 +21,21 @@ public class LoginResponseDto {
     private String gradeName;
     private String status;
 
-    public static LoginResponseDto from(Member member) {
+    /**
+     * JWT Access Token
+     */
+    private String accessToken;
 
+    public static LoginResponseDto from(Member member, String accessToken) {
         return new LoginResponseDto(
                 member.getId(),
                 member.getLoginId(),
                 member.getName(),
                 member.getNickname(),
-                member.getGrade() != null
-                        ? member.getGrade().getId()
-                        : null,
-                member.getGrade() != null
-                        ? member.getGrade().getName()
-                        : null,
-                member.getStatus()
+                member.getGrade() != null ? member.getGrade().getId() : null,
+                member.getGrade() != null ? member.getGrade().getName() : null,
+                member.getStatus(),
+                accessToken
         );
     }
 }

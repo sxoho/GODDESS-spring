@@ -3,6 +3,7 @@ package dev.jpa.team1.member.login;
 import dev.jpa.team1.member.loginhistory.LoginHistoryService;
 import dev.jpa.team1.member.member.Member;
 import dev.jpa.team1.member.member.MemberRepository;
+import dev.jpa.team1.security.JwtTokenProvider;
 
 import lombok.RequiredArgsConstructor;
 
@@ -16,6 +17,8 @@ public class LoginService {
     private final MemberRepository memberRepository;
 
     private final LoginHistoryService loginHistoryService;
+    
+    private final JwtTokenProvider jwtTokenProvider;
 
     /**
      * 로그인
@@ -101,8 +104,40 @@ public class LoginService {
                 device
         );
 
+        /**
+         * 회원 등급에 따른 권한 설정
+         *
+         * GRADE_ID
+         * 1 = USER
+         * 2 = GOLD
+         * 3 = VIP
+         * 4 = ADMIN
+         */
+        String role = "ROLE_USER";
+
+        if (member.getGrade() != null && member.getGrade().getId() != null) {
+            Long gradeId = member.getGrade().getId();
+
+            if (gradeId == 2L) {
+                role = "ROLE_GOLD";
+            } else if (gradeId == 3L) {
+                role = "ROLE_VIP";
+            } else if (gradeId == 4L) {
+                role = "ROLE_ADMIN";
+            }
+        }
+
+        /**
+         * JWT Access Token 발급
+         */
+        String accessToken = jwtTokenProvider.createAccessToken(
+                member.getLoginId(),
+                role
+        );
+
         return LoginResponseDto.from(
-                member
+                member,
+                accessToken
         );
     }
 }

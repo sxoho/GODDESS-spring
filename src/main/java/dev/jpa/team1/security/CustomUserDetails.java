@@ -20,37 +20,34 @@ public class CustomUserDetails
     }
 
     @Override
-    public Collection<? extends GrantedAuthority>
-    getAuthorities() {
+    public Collection<? extends GrantedAuthority> getAuthorities() {
 
-        String roleName =
-                "ROLE_USER";
+        String roleName = "ROLE_USER";
 
         if (
                 member.getGrade() != null &&
                 member.getGrade().getId() != null
         ) {
-
-            Long gradeId =
-                    member.getGrade().getId();
+            Long gradeId = member.getGrade().getId();
 
             /**
              * GRADE_ID
-             * 1 ~ 3 = ADMIN
+             * 1 = USER
+             * 2 = GOLD
+             * 3 = VIP
+             * 4 = ADMIN
              */
-            if (
-                    gradeId >= 1 &&
-                    gradeId <= 3
-            ) {
-                roleName =
-                        "ROLE_ADMIN";
+            if (gradeId == 2L) {
+                roleName = "ROLE_GOLD";
+            } else if (gradeId == 3L) {
+                roleName = "ROLE_VIP";
+            } else if (gradeId == 4L) {
+                roleName = "ROLE_ADMIN";
             }
         }
 
         return Collections.singletonList(
-                new SimpleGrantedAuthority(
-                        roleName
-                )
+                new SimpleGrantedAuthority(roleName)
         );
     }
 
@@ -82,8 +79,6 @@ public class CustomUserDetails
     @Override
     public boolean isEnabled() {
         return !"WITHDRAWN"
-                .equalsIgnoreCase(
-                        member.getStatus()
-                );
+                .equalsIgnoreCase(member.getStatus());
     }
 }
