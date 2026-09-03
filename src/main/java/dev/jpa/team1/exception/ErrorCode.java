@@ -25,11 +25,11 @@ public enum ErrorCode {
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "P001", "상품 정보를 찾을 수 없습니다."),
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "P002", "카테고리 정보를 찾을 수 없습니다."),
 
-    // --- Fitting ---
-    FITTING_NOT_FOUND(HttpStatus.NOT_FOUND, "F001", "피팅 요청 정보를 찾을 수 없습니다."),
-    FITTING_RESULT_NOT_FOUND(HttpStatus.NOT_FOUND, "F002", "피팅 결과 정보를 찾을 수 없습니다."),
-    UNAUTHORIZED_FITTING_ACCESS(HttpStatus.FORBIDDEN, "F003", "해당 피팅 정보에 대한 접근 권한이 없습니다."),
-    INVALID_FITTING_TYPE(HttpStatus.BAD_REQUEST, "F004", "지원하지 않는 피팅 종류입니다."),
+    // --- Beauty Try-On ---
+    BEAUTY_TRYON_NOT_FOUND(HttpStatus.NOT_FOUND, "B001", "뷰티 가상체험 요청 정보를 찾을 수 없습니다."),
+    BEAUTY_TRYON_RESULT_NOT_FOUND(HttpStatus.NOT_FOUND, "B002", "뷰티 가상체험 결과 정보를 찾을 수 없습니다."),
+    UNAUTHORIZED_BEAUTY_TRYON_ACCESS(HttpStatus.FORBIDDEN, "B003", "해당 뷰티 가상체험 정보에 대한 접근 권한이 없습니다."),
+    INVALID_BEAUTY_TYPE(HttpStatus.BAD_REQUEST, "B004", "지원하지 않는 뷰티 가상체험 종류입니다."),
 
     // --- Commerce & Order ---
     CART_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "O001", "장바구니에서 해당 상품을 찾을 수 없습니다."),

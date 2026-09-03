@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import dev.jpa.team1.commerce.orderdetail.OrderDetail;
 import dev.jpa.team1.commerce.orderdetail.OrderDetailRepository;
-import dev.jpa.team1.fitting.fittingsave.FittingSave;
-import dev.jpa.team1.fitting.fittingsave.FittingSaveRepository;
+import dev.jpa.team1.beauty.save.BeautySave;
+import dev.jpa.team1.beauty.save.BeautySaveRepository;
 import dev.jpa.team1.member.member.Member;
 import dev.jpa.team1.member.member.MemberRepository;
 import dev.jpa.team1.product.product.Product;
@@ -34,7 +34,7 @@ public class ProductReviewService {
     private final MemberRepository memberRepository;
     private final ProductRepository productRepository;
     private final OrderDetailRepository orderDetailRepository;
-    private final FittingSaveRepository fittingSaveRepository;
+    private final BeautySaveRepository beautySaveRepository;
     private final ObjectMapper objectMapper;
 
     @Value("${PRODUCT_REVIEW_LLM_BASE_URL:http://139.150.91.194:11131}")
@@ -61,8 +61,8 @@ public class ProductReviewService {
                     .orElseThrow(() -> new IllegalArgumentException("주문 상세 정보를 찾을 수 없습니다."));
         }
 
-        FittingSave fittingSave = getFittingSave(
-                requestDto.getFittingSaveId(),
+        BeautySave beautySave = getBeautySave(
+                requestDto.getBeautySaveId(),
                 requestDto.getMemberId()
         );
 
@@ -70,7 +70,7 @@ public class ProductReviewService {
                 .member(member)
                 .orderDetail(orderDetail)
                 .product(product)
-                .fittingSave(fittingSave)
+                .beautySave(beautySave)
                 .title(requestDto.getTitle().trim())
                 .content(requestDto.getContent().trim())
                 .rating(requestDto.getRating())
@@ -155,8 +155,8 @@ public class ProductReviewService {
                 .findByIdAndMemberId(reviewId, requestDto.getMemberId())
                 .orElseThrow(() -> new IllegalArgumentException("본인이 작성한 리뷰만 수정할 수 있습니다."));
 
-        FittingSave fittingSave = getFittingSave(
-                requestDto.getFittingSaveId(),
+        BeautySave beautySave = getBeautySave(
+                requestDto.getBeautySaveId(),
                 requestDto.getMemberId()
         );
 
@@ -164,7 +164,7 @@ public class ProductReviewService {
                 requestDto.getTitle().trim(),
                 requestDto.getContent().trim(),
                 requestDto.getRating(),
-                fittingSave
+                beautySave
         );
 
         return ProductReviewResponseDto.from(review);
@@ -328,22 +328,22 @@ public class ProductReviewService {
                 .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다."));
     }
 
-    private FittingSave getFittingSave(
-            Long fittingSaveId,
+    private BeautySave getBeautySave(
+            Long beautySaveId,
             Long memberId
     ) {
-        if (fittingSaveId == null) {
+        if (beautySaveId == null) {
             return null;
         }
 
-        FittingSave fittingSave = fittingSaveRepository.findById(fittingSaveId)
-                .orElseThrow(() -> new IllegalArgumentException("저장한 피팅 결과를 찾을 수 없습니다."));
+        BeautySave beautySave = beautySaveRepository.findById(beautySaveId)
+                .orElseThrow(() -> new IllegalArgumentException("저장한 뷰티 체험 결과를 찾을 수 없습니다."));
 
-        if (!fittingSave.getMember().getId().equals(memberId)) {
-            throw new IllegalArgumentException("본인의 피팅 결과만 리뷰에 첨부할 수 있습니다.");
+        if (!beautySave.getMember().getId().equals(memberId)) {
+            throw new IllegalArgumentException("본인의 뷰티 체험 결과만 리뷰에 첨부할 수 있습니다.");
         }
 
-        return fittingSave;
+        return beautySave;
     }
 
     private String normalize(String value) {

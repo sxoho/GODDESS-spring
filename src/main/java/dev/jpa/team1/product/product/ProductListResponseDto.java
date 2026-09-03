@@ -1,43 +1,7 @@
 package dev.jpa.team1.product.product;
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+import lombok.*;
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor
 public class ProductListResponseDto {
-    private Long id;
-
-    private String name;
-
-    private Integer price;
-
-    private String discount;
-
-    private String categoryName;
-
-    private String mainImagePath;
-
-    private String fittingEnabled;
-
-    private String status;
-
-
-    public static ProductListResponseDto from(Product product, String mainImagePath) {
-        return new ProductListResponseDto(
-                product.getId(),
-                product.getName(),
-                product.getPrice(),
-                product.getDiscount(),
-                product.getCategory().getName(),
-                mainImagePath,
-                product.getFittingEnabled(),
-                product.getStatus()
-        );
-    }
-
+ private Long id; private String name; private Integer price; private Integer discount; private String categoryName; private String mainImagePath; private String aiApplyEnabled; private String status;
+ public static ProductListResponseDto from(Product p,String mainImagePath){return new ProductListResponseDto(p.getId(),p.getName(),p.getPrice(),p.getDiscount(),p.getCategory().getName(),mainImagePath,p.getAiApplyEnabled(),p.getStatus());}
 }

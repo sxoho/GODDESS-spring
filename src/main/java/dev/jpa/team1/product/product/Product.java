@@ -5,9 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-
 import java.time.LocalDateTime;
-
 
 @Entity
 @Table(name = "product")
@@ -16,7 +14,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class Product {
-
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "product_seq")
     @SequenceGenerator(name = "product_seq", sequenceName = "product_seq", allocationSize = 1)
@@ -26,11 +23,8 @@ public class Product {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
-    
-    @Column(nullable = false, length = 100)
-    private String brand;
 
-    @Column(nullable = false, length = 255)
+    @Column(nullable = false, length = 200)
     private String name;
 
     @Lob
@@ -39,60 +33,65 @@ public class Product {
     @Column(nullable = false)
     private Integer price;
 
-    @Column(length = 50)
-    private String discount;
+    @Builder.Default
+    private Integer discount = 0;
 
-    @Column(length = 255)
-    private String material;
+    @Column(length = 100)
+    private String brand;
 
-    @Column(length = 255)
-    private String washing;
-
-    @Column(name = "fitting_enabled", nullable = false, length = 1)
-    private String fittingEnabled;
-
-    @Column(nullable = false, length = 20)
-    private String status;
+    @Column(name = "usage_info", length = 500)
+    private String usageInfo;
 
     @Builder.Default
+    @Column(name = "ai_apply_enabled", nullable = false, length = 1)
+    private String aiApplyEnabled = "Y";
+
+    @Column(name = "product_type", length = 30)
+    private String productType;
+
+    @Column(length = 50)
+    private String volume;
+
+    @Column(name = "skin_type", length = 100)
+    private String skinType;
+
+    @Column(name = "personal_color", length = 100)
+    private String personalColor;
+
+    @Builder.Default
+    @Column(nullable = false, length = 20)
+    private String status = "ON_SALE";
+
+    @Builder.Default
+    @Column(name = "view_count", nullable = false)
     private Integer viewCount = 0;
 
     @CreationTimestamp
-    @Column(updatable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-    
-    public void update(
-            Category category,
-            String brand,
-            String name,
-            String description,
-            Integer price,
-            String discount,
-            String material,
-            String washing,
-            String fittingEnabled,
-            String status
-    ) {
+
+    public void update(Category category, String name, String description, Integer price, Integer discount,
+                       String brand, String usageInfo, String aiApplyEnabled, String productType,
+                       String volume, String skinType, String personalColor, String status) {
         this.category = category;
-        this.brand = brand;
         this.name = name;
         this.description = description;
         this.price = price;
-        this.discount = discount;
-        this.material = material;
-        this.washing = washing;
-        this.fittingEnabled = fittingEnabled;
-        this.status = status;
+        this.discount = discount == null ? 0 : discount;
+        this.brand = brand;
+        this.usageInfo = usageInfo;
+        this.aiApplyEnabled = aiApplyEnabled == null ? "Y" : aiApplyEnabled;
+        this.productType = productType;
+        this.volume = volume;
+        this.skinType = skinType;
+        this.personalColor = personalColor;
+        this.status = status == null ? "ON_SALE" : status;
     }
 
-    public void stopSale() {
-        this.status = "판매중지";
-    }
-    
-    public void resumeSale() {
-        this.status = "판매중";
-    }
+    public void stopSale() { this.status = "STOPPED"; }
+    public void resumeSale() { this.status = "ON_SALE"; }
 }

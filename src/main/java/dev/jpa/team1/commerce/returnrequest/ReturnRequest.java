@@ -20,13 +20,13 @@ import java.time.LocalDateTime;
 public class ReturnRequest {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "return_seq")
-    @SequenceGenerator(name = "return_seq", sequenceName = "return_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "return_request_seq")
+    @SequenceGenerator(name = "return_request_seq", sequenceName = "return_request_seq", allocationSize = 1)
     @Column(name = "return_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_detail_id", nullable = false)
+    @JoinColumn(name = "orderdetail_id", nullable = false)
     private OrderDetail orderDetail;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -42,7 +42,7 @@ public class ReturnRequest {
     @Column(nullable = false, length = 50)
     private String status;
 
-    @Column(length = 255)
+    @Column(name = "file_path", length = 500)
     private String filePath;
 
     @CreationTimestamp

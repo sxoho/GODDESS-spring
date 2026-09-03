@@ -7,7 +7,7 @@ plugins {
 
 group = 'com'
 version = '1.0'
-description = 'team1-jpa-v1'
+description = 'goddess-spring'
 
 java {
     toolchain {

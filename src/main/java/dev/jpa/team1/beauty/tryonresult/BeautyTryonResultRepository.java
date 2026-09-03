@@ -1,0 +1,1 @@
+package dev.jpa.team1.beauty.tryonresult; import org.springframework.data.jpa.repository.JpaRepository; import java.util.List; public interface BeautyTryonResultRepository extends JpaRepository<BeautyTryonResult,Long>{List<BeautyTryonResult> findByBeautyTryonIdOrderByCreatedAtDesc(Long beautyTryonId);}

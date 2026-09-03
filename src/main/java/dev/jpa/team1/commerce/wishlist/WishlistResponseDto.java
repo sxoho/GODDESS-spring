@@ -18,7 +18,7 @@ public class WishlistResponseDto {
     private String productName;
 
     private Integer price;
-    private String discount;
+    private Integer discount;
 
     private LocalDateTime createdAt;
 

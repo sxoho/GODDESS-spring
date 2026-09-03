@@ -29,7 +29,7 @@ public class LoginHistory {
             sequenceName = "login_history_seq",
             allocationSize = 1
     )
-    @Column(name = "login_history_id")
+    @Column(name = "loginhistory_id")
     private Long id;
 
 

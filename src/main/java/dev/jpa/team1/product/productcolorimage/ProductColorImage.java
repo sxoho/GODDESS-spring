@@ -17,13 +17,13 @@ import java.time.LocalDateTime;
 public class ProductColorImage {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "color_image_seq")
-    @SequenceGenerator(name = "color_image_seq", sequenceName = "color_image_seq", allocationSize = 1)
-    @Column(name = "color_image_id")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "product_color_image_seq")
+    @SequenceGenerator(name = "product_color_image_seq", sequenceName = "product_color_image_seq", allocationSize = 1)
+    @Column(name = "colorimage_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_color_id", nullable = false)
+    @JoinColumn(name = "productcolor_id", nullable = false)
     private ProductColor productColor;
 
     @Column(name = "file_origin", nullable = false, length = 255)
@@ -41,8 +41,9 @@ public class ProductColorImage {
     @Column(name = "image_type", nullable = false, length = 50)
     private String imageType;
 
-    @Column(nullable = false)
-    private Integer sortOrder;
+    @Builder.Default
+    @Column(name = "sort_order", nullable = false)
+    private Integer sortOrder = 1;
 
     public void updateMetadata(
             String isMain,

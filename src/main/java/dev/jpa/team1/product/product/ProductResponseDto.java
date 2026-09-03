@@ -1,90 +1,40 @@
 package dev.jpa.team1.product.product;
 
 import dev.jpa.team1.product.productcolor.ProductColorResponseDto;
-import dev.jpa.team1.product.productsize.ProductSizeResponseDto;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
+import dev.jpa.team1.product.productvariant.ProductVariantResponseDto;
+import lombok.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor
 public class ProductResponseDto {
     private Long id;
     private Long categoryId;
     private Long parentCategoryId;
     private String categoryName;
-    private String brand;
     private String name;
     private String description;
     private Integer price;
-    private String discount;
-    private String material;
-    private String washing;
-    private String fittingEnabled;
+    private Integer discount;
+    private String brand;
+    private String usageInfo;
+    private String aiApplyEnabled;
+    private String productType;
+    private String volume;
+    private String skinType;
+    private String personalColor;
     private String status;
     private Integer viewCount;
     private List<ProductColorResponseDto> colors;
-    private List<ProductSizeResponseDto> sizes;
+    private List<ProductVariantResponseDto> variants;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public static ProductResponseDto from(Product product) {
-        return new ProductResponseDto(
-                product.getId(),
-                product.getCategory().getId(),
-                product.getCategory().getParent() != null
-                        ? product.getCategory().getParent().getId()
-                        : null,
-                product.getCategory().getName(),
-                product.getBrand(),
-                product.getName(),
-                product.getDescription(),
-                product.getPrice(),
-                product.getDiscount(),
-                product.getMaterial(),
-                product.getWashing(),
-                product.getFittingEnabled(),
-                product.getStatus(),
-                product.getViewCount(),
-                List.of(),
-                List.of(),
-                product.getCreatedAt(),
-                product.getUpdatedAt()
-        );
-    }
-
-    public static ProductResponseDto from(
-            Product product,
-            List<ProductColorResponseDto> colors,
-            List<ProductSizeResponseDto> sizes
-    ) {
-        return new ProductResponseDto(
-                product.getId(),
-                product.getCategory().getId(),
-                product.getCategory().getParent() != null
-                        ? product.getCategory().getParent().getId()
-                        : null,
-                product.getCategory().getName(),
-                product.getBrand(),
-                product.getName(),
-                product.getDescription(),
-                product.getPrice(),
-                product.getDiscount(),
-                product.getMaterial(),
-                product.getWashing(),
-                product.getFittingEnabled(),
-                product.getStatus(),
-                product.getViewCount(),
-                colors,
-                sizes,
-                product.getCreatedAt(),
-                product.getUpdatedAt()
-        );
+    public static ProductResponseDto from(Product p) {
+        return new ProductResponseDto(p.getId(), p.getCategory().getId(),
+                p.getCategory().getParent()!=null?p.getCategory().getParent().getId():null,
+                p.getCategory().getName(), p.getName(), p.getDescription(), p.getPrice(), p.getDiscount(), p.getBrand(),
+                p.getUsageInfo(), p.getAiApplyEnabled(), p.getProductType(), p.getVolume(), p.getSkinType(), p.getPersonalColor(),
+                p.getStatus(), p.getViewCount(), List.of(), List.of(), p.getCreatedAt(), p.getUpdatedAt());
     }
 }

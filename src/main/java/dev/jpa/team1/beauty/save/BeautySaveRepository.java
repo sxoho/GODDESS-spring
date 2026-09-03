@@ -1,0 +1,1 @@
+package dev.jpa.team1.beauty.save; import org.springframework.data.jpa.repository.JpaRepository; import java.util.List; public interface BeautySaveRepository extends JpaRepository<BeautySave,Long>{List<BeautySave> findByMemberIdOrderByCreatedAtDesc(Long memberId);}

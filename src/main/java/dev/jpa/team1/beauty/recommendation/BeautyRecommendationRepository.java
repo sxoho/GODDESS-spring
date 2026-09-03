@@ -1,0 +1,1 @@
+package dev.jpa.team1.beauty.recommendation; import org.springframework.data.jpa.repository.JpaRepository; import java.util.List; public interface BeautyRecommendationRepository extends JpaRepository<BeautyRecommendation,Long>{List<BeautyRecommendation> findByMemberIdOrderByCreatedAtDesc(Long memberId);}

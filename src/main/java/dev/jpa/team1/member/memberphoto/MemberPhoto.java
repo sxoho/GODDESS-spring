@@ -27,7 +27,7 @@ public class MemberPhoto {
             sequenceName = "member_photo_seq",
             allocationSize = 1
     )
-    @Column(name = "member_photo_id")
+    @Column(name = "memberphoto_id")
     private Long id;
 
 

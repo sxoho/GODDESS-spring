@@ -24,7 +24,7 @@ public class HomeCont {
   public String msg() {
     System.out.println("-> 암호화 테스트: " + security.aesEncode("1234"));
     
-    return "<h2>KD11 Backend server running...</h2>";
+    return "<h2>GODDESS Backend server running...</h2>";
   }
 
 }

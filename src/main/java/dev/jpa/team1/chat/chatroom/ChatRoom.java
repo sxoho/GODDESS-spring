@@ -20,7 +20,7 @@ public class ChatRoom {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "chat_room_seq")
     @SequenceGenerator(name = "chat_room_seq", sequenceName = "chat_room_seq", allocationSize = 1)
-    @Column(name = "chat_room_id")
+    @Column(name = "chatroom_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

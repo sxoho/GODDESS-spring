@@ -1,0 +1,1 @@
+package dev.jpa.team1.beauty.personalcolor; import org.springframework.data.jpa.repository.JpaRepository; import java.util.List; public interface PersonalColorResultRepository extends JpaRepository<PersonalColorResult,Long>{List<PersonalColorResult> findByMemberIdOrderByCreatedAtDesc(Long memberId);}

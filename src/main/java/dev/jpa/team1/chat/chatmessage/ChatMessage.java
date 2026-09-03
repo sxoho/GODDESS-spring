@@ -20,11 +20,11 @@ public class ChatMessage {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "chat_message_seq")
     @SequenceGenerator(name = "chat_message_seq", sequenceName = "chat_message_seq", allocationSize = 1)
-    @Column(name = "chat_message_id")
+    @Column(name = "chatmessage_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chat_room_id", nullable = false)
+    @JoinColumn(name = "chatroom_id", nullable = false)
     private ChatRoom chatRoom;
 
     @Column(name = "sender_type", nullable = false, length = 50)

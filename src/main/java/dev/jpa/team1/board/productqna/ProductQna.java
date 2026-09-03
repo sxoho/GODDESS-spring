@@ -29,7 +29,7 @@ public class ProductQna {
             sequenceName = "product_qna_seq",
             allocationSize = 1
     )
-    @Column(name = "product_qna_id")
+    @Column(name = "productqna_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

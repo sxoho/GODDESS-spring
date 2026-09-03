@@ -63,18 +63,18 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     );
 
     /**
-     * 가상 피팅이 가능한 상품 목록 조회
+     * AI 뷰티 적용이 가능한 상품 목록 조회
      */
-    List<Product> findByFittingEnabledOrderByCreatedAtDesc(
-            String fittingEnabled
+    List<Product> findByAiApplyEnabledOrderByCreatedAtDesc(
+            String aiApplyEnabled
     );
 
     /**
-     * 특정 카테고리에 속하면서 가상 피팅이 가능한 상품 조회
+     * 특정 카테고리에 속하면서 AI 뷰티 적용이 가능한 상품 조회
      */
-    List<Product> findByCategoryIdAndFittingEnabledOrderByCreatedAtDesc(
+    List<Product> findByCategoryIdAndAiApplyEnabledOrderByCreatedAtDesc(
             Long categoryId,
-            String fittingEnabled
+            String aiApplyEnabled
     );
 
     /**

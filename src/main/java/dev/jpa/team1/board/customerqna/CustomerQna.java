@@ -29,7 +29,7 @@ public class CustomerQna {
             sequenceName = "customer_qna_seq",
             allocationSize = 1
     )
-    @Column(name = "customer_qna_id")
+    @Column(name = "customerqna_id")
     private Long id;
 
 
