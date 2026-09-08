@@ -49,4 +49,19 @@ public class OrderService {
         cartRepository.deleteAll(cartItems);
         return OrderResponseDto.from(order);
     }
+    @Transactional(readOnly = true)
+    public List<OrderResponseDto> getMyOrders(String loginId) {
+
+        Member member = memberRepository.findByLoginId(loginId)
+                .orElseThrow(() ->
+                        new CustomException(ErrorCode.MEMBER_NOT_FOUND)
+                );
+
+        return ordersRepository
+                .findByMemberIdOrderByCreatedAtDesc(member.getId())
+                .stream()
+                .map(OrderResponseDto::from)
+                .toList();
+    }
+    
 }

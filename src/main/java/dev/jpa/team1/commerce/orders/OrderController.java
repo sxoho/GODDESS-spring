@@ -11,6 +11,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/commerce/orders")
@@ -29,6 +33,18 @@ public class OrderController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponse.success(response));
+    }
+    
+    @GetMapping("/my")
+    public ResponseEntity<ApiResponse<List<OrderResponseDto>>> getMyOrders(
+        @RequestParam("loginId") String loginId) {
+
+        List<OrderResponseDto> response =
+                ordersService.getMyOrders(loginId);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(response)
+        );
     }
 
     // TODO: 결제기능 추가
