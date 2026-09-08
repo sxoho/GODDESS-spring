@@ -31,6 +31,10 @@ public class MemberResponseDto {
 
     private String address2;
 
+    private String skinType;
+
+    private String personalColor;
+
     private String status;
 
     private Long gradeId;
@@ -43,20 +47,34 @@ public class MemberResponseDto {
 
     private LocalDateTime withdrawnAt;
 
+
     public static MemberResponseDto from(
             Member member
     ) {
 
         return new MemberResponseDto(
                 member.getId(),
+
                 member.getLoginId(),
+
                 member.getName(),
+
                 member.getNickname(),
+
                 member.getEmail(),
+
                 member.getTel(),
+
                 member.getZipcode(),
+
                 member.getAddress1(),
+
                 member.getAddress2(),
+
+                member.getSkinType(),
+
+                member.getPersonalColor(),
+
                 member.getStatus(),
 
                 member.getGrade() != null
@@ -68,7 +86,9 @@ public class MemberResponseDto {
                         : null,
 
                 member.getCreatedAt(),
+
                 member.getUpdatedAt(),
+
                 member.getWithdrawnAt()
         );
     }

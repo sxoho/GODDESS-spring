@@ -79,6 +79,38 @@ public class Member {
     @Column(length = 255)
     private String address2;
 
+    /**
+     * 현재 회원 피부 타입
+     *
+     * 사용 예:
+     * DRY
+     * OILY
+     * COMBINATION
+     * SENSITIVE
+     * NORMAL
+     * DEHYDRATED
+     */
+    @Column(
+            name = "skin_type",
+            length = 30
+    )
+    private String skinType;
+
+    /**
+     * 현재 회원 퍼스널 컬러
+     *
+     * 사용 예:
+     * SPRING_WARM
+     * SUMMER_COOL
+     * AUTUMN_WARM
+     * WINTER_COOL
+     */
+    @Column(
+            name = "personal_color",
+            length = 30
+    )
+    private String personalColor;
+
     @Column(
             nullable = false,
             length = 20
@@ -94,6 +126,7 @@ public class Member {
 
     @Column(name = "withdrawn_at")
     private LocalDateTime withdrawnAt;
+
 
     /**
      * 관리자 회원 정보 수정
@@ -127,7 +160,8 @@ public class Member {
         this.address1 = address1;
         this.address2 = address2;
     }
-    
+
+
     /**
      * 마이페이지 회원 정보 수정
      *
@@ -146,24 +180,52 @@ public class Member {
             String address2
     ) {
 
-        this.loginId =
-                loginId;
-
-        this.nickname =
-                nickname;
-
-        this.zipcode =
-                zipcode;
-
-        this.address1 =
-                address1;
-
-        this.address2 =
-                address2;
+        this.loginId = loginId;
+        this.nickname = nickname;
+        this.zipcode = zipcode;
+        this.address1 = address1;
+        this.address2 = address2;
 
         this.updatedAt =
                 LocalDateTime.now();
     }
+
+
+    /**
+     * 현재 피부 타입 변경
+     *
+     * 사용 위치:
+     * 피부 자가진단 결과 저장
+     * 마이페이지 직접 수정
+     */
+    public void skinTypeUpdate(
+            String skinType
+    ) {
+
+        this.skinType = skinType;
+
+        this.updatedAt =
+                LocalDateTime.now();
+    }
+
+
+    /**
+     * 현재 퍼스널 컬러 변경
+     *
+     * 사용 위치:
+     * 퍼스널컬러 진단 결과 저장
+     * 마이페이지 직접 수정
+     */
+    public void personalColorUpdate(
+            String personalColor
+    ) {
+
+        this.personalColor = personalColor;
+
+        this.updatedAt =
+                LocalDateTime.now();
+    }
+
 
     /**
      * 회원 탈퇴 처리
@@ -178,7 +240,8 @@ public class Member {
         this.withdrawnAt =
                 LocalDateTime.now();
     }
-    
+
+
     /**
      * 비밀번호 변경
      *
@@ -187,6 +250,7 @@ public class Member {
     public void passwordUpdate(
             String password
     ) {
+
         this.password = password;
     }
 }
