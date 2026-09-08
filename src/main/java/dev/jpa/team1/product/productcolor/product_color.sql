@@ -1,79 +1,89 @@
--- ProductColor 테이블 및 시퀀스 삭제
-DROP TABLE product_color CASCADE CONSTRAINTS;
-DROP SEQUENCE product_color_seq;
+-- ============================================================
+-- GODDESS / PRODUCT_COLOR
+-- 기존 FITTING_ENABLED -> AI_APPLY_ENABLED
+-- PRODUCT_COLOR_INFO -> PRODUCT_COLOR_MASTER
+-- ============================================================
 
--- ProductColor 시퀀스 생성
-CREATE SEQUENCE product_color_seq START WITH 1 INCREMENT BY 1 NOCACHE;
+BEGIN
+    EXECUTE IMMEDIATE 'DROP TABLE PRODUCT_COLOR CASCADE CONSTRAINTS';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -942 THEN RAISE; END IF;
+END;
+/
 
--- ProductColor 테이블 생성
-CREATE TABLE product_color (
-    product_color_id NUMBER PRIMARY KEY, -- 상품 색상 번호
-    product_id NUMBER NOT NULL, -- 상품 번호(FK)
-    color_id NUMBER NOT NULL, -- 색상 번호(FK)
-    is_main VARCHAR2(1) NOT NULL, -- 대표 색상 여부(Y/N)
-    sort_order NUMBER NOT NULL, -- 출력 순서
-    fitting_enabled VARCHAR2(1) NOT NULL, -- 피팅 가능 여부(Y/N)
-    visible VARCHAR2(1) NOT NULL, -- 사용 여부(Y/N)
-    CONSTRAINT fk_product_color_product FOREIGN KEY (product_id) REFERENCES product(product_id),
-    CONSTRAINT fk_product_color_info FOREIGN KEY (color_id) REFERENCES product_color_info(color_id),
-    CONSTRAINT ck_product_color_main CHECK (is_main IN ('Y','N')),
-    CONSTRAINT ck_product_color_fitting CHECK (fitting_enabled IN ('Y','N')),
-    CONSTRAINT ck_product_color_visible CHECK (visible IN ('Y','N'))
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE PRODUCT_COLOR_SEQ';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -2289 THEN RAISE; END IF;
+END;
+/
+
+CREATE SEQUENCE PRODUCT_COLOR_SEQ
+    START WITH 1
+    INCREMENT BY 1
+    NOCACHE
+    NOCYCLE;
+
+CREATE TABLE PRODUCT_COLOR (
+    PRODUCTCOLOR_ID     NUMBER    NOT NULL,
+    PRODUCT_ID          NUMBER    NOT NULL,
+    COLOR_ID            NUMBER    NOT NULL,
+    IS_MAIN             CHAR(1)   DEFAULT 'N' NOT NULL,
+    SORT_ORDER          NUMBER    DEFAULT 1 NOT NULL,
+    AI_APPLY_ENABLED    CHAR(1)   DEFAULT 'Y' NOT NULL,
+    VISIBLE             CHAR(1)   DEFAULT 'Y' NOT NULL,
+
+    CONSTRAINT PK_PRODUCT_COLOR PRIMARY KEY (PRODUCTCOLOR_ID),
+    CONSTRAINT FK_PRODUCT_COLOR_PRODUCT
+        FOREIGN KEY (PRODUCT_ID) REFERENCES PRODUCT (PRODUCT_ID),
+    CONSTRAINT FK_PRODUCT_COLOR_MASTER
+        FOREIGN KEY (COLOR_ID) REFERENCES PRODUCT_COLOR_MASTER (COLOR_ID),
+    CONSTRAINT CK_PRODUCT_COLOR_MAIN
+        CHECK (IS_MAIN IN ('Y', 'N')),
+    CONSTRAINT CK_PRODUCT_COLOR_AI
+        CHECK (AI_APPLY_ENABLED IN ('Y', 'N')),
+    CONSTRAINT CK_PRODUCT_COLOR_VISIBLE
+        CHECK (VISIBLE IN ('Y', 'N'))
 );
 
--- 코멘트
-COMMENT ON TABLE product_color IS '상품 색상';
-COMMENT ON COLUMN product_color.product_color_id IS '상품 색상 번호';
-COMMENT ON COLUMN product_color.product_id IS '상품 번호';
-COMMENT ON COLUMN product_color.color_id IS '색상 번호';
-COMMENT ON COLUMN product_color.is_main IS '대표 색상 여부(Y/N)';
-COMMENT ON COLUMN product_color.sort_order IS '출력 순서';
-COMMENT ON COLUMN product_color.fitting_enabled IS '피팅 가능 여부(Y/N)';
-COMMENT ON COLUMN product_color.visible IS '사용 여부(Y/N)';
+COMMENT ON TABLE PRODUCT_COLOR IS '상품별 색상/호수';
+COMMENT ON COLUMN PRODUCT_COLOR.PRODUCTCOLOR_ID IS '상품 색상 번호';
+COMMENT ON COLUMN PRODUCT_COLOR.PRODUCT_ID IS '상품 번호';
+COMMENT ON COLUMN PRODUCT_COLOR.COLOR_ID IS '색상 마스터 번호';
+COMMENT ON COLUMN PRODUCT_COLOR.IS_MAIN IS '대표 색상 여부(Y/N)';
+COMMENT ON COLUMN PRODUCT_COLOR.SORT_ORDER IS '출력 순서';
+COMMENT ON COLUMN PRODUCT_COLOR.AI_APPLY_ENABLED IS 'AI 적용 가능 여부(Y/N)';
+COMMENT ON COLUMN PRODUCT_COLOR.VISIBLE IS '사용 여부(Y/N)';
 
--- 등록
-INSERT INTO product_color(product_color_id, product_id, color_id, is_main, sort_order, fitting_enabled, visible)
-VALUES(product_color_seq.NEXTVAL, 1, 1, 'Y', 1, 'Y', 'Y');
+-- 샘플 등록 예시
+-- INSERT INTO PRODUCT_COLOR (
+--     PRODUCTCOLOR_ID, PRODUCT_ID, COLOR_ID,
+--     IS_MAIN, SORT_ORDER, AI_APPLY_ENABLED, VISIBLE
+-- )
+-- VALUES (
+--     PRODUCT_COLOR_SEQ.NEXTVAL,
+--     1,
+--     (SELECT COLOR_ID FROM PRODUCT_COLOR_MASTER WHERE COLOR_NAME = '로즈 핑크'),
+--     'Y',
+--     1,
+--     'Y',
+--     'Y'
+-- );
+--
+-- COMMIT;
 
-COMMIT;
-
--- 글로니 베이직 반팔 색상 등록(test)
-INSERT INTO product_color(product_color_id, product_id, color_id, is_main, sort_order, fitting_enabled, visible)
-VALUES(product_color_seq.NEXTVAL, (SELECT product_id FROM product WHERE name='글로니 베이직 반팔'), (SELECT color_id FROM product_color_info WHERE color_name='블랙'), 'Y', 1, 'Y', 'Y');
-
-INSERT INTO product_color(product_color_id, product_id, color_id, is_main, sort_order, fitting_enabled, visible)
-VALUES(product_color_seq.NEXTVAL, (SELECT product_id FROM product WHERE name='글로니 베이직 반팔'), (SELECT color_id FROM product_color_info WHERE color_name='화이트'), 'N', 2, 'Y', 'Y');
-
-INSERT INTO product_color(product_color_id, product_id, color_id, is_main, sort_order, fitting_enabled, visible)
-VALUES(product_color_seq.NEXTVAL, (SELECT product_id FROM product WHERE name='글로니 베이직 반팔'), (SELECT color_id FROM product_color_info WHERE color_name='그레이'), 'N', 3, 'Y', 'Y');
-
-COMMIT;
-
---글리터 셔츠 등록
-INSERT INTO product_color(product_color_id, product_id, color_id, is_main, sort_order, fitting_enabled, visible) 
-VALUES(product_color_seq.NEXTVAL, (SELECT product_id FROM product WHERE name='글리터 셔츠'), (SELECT color_id FROM product_color_info WHERE color_name='화이트'), 'Y', 1, 'Y', 'Y');
-COMMIT;
-
--- 전체 조회
-select * from PRODUCT_COLOR;
-SELECT * FROM product_color ORDER BY product_color_id;
-
--- 상품별 색상 조회
-SELECT pc.product_color_id, pc.product_id, pc.color_id, pcm.color_name, pcm.color_code, pc.is_main, pc.sort_order, pc.fitting_enabled, pc.visible
-FROM product_color pc
-JOIN product_color_info pcm ON pc.color_id = pcm.color_id
-WHERE pc.product_id = 1
-ORDER BY pc.sort_order;
-
--- 수정
-UPDATE product_color
-SET color_id = 2, is_main = 'N', sort_order = 2, fitting_enabled = 'Y', visible = 'Y'
-WHERE product_color_id = 1;
-
-COMMIT;
-
--- 삭제
-DELETE FROM product_color
-WHERE product_color_id = 1;
-
-COMMIT;
+SELECT
+    PC.PRODUCTCOLOR_ID,
+    PC.PRODUCT_ID,
+    PCM.COLOR_NAME,
+    PCM.COLOR_CODE,
+    PC.IS_MAIN,
+    PC.SORT_ORDER,
+    PC.AI_APPLY_ENABLED,
+    PC.VISIBLE
+FROM PRODUCT_COLOR PC
+JOIN PRODUCT_COLOR_MASTER PCM
+  ON PC.COLOR_ID = PCM.COLOR_ID
+ORDER BY PC.PRODUCT_ID, PC.SORT_ORDER, PC.PRODUCTCOLOR_ID;

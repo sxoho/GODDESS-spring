@@ -1,32 +1,82 @@
--- ProductOption 테이블 및 시퀀스 생성
+-- ============================================================
+-- GODDESS / PRODUCT_OPTION
+-- PRODUCT_SIZE_ID 제거 -> PRODUCTVARIANT_ID
+-- 색상/규격은 상품 유형에 따라 NULL 가능
+-- ============================================================
 
-CREATE SEQUENCE product_option_seq START WITH 1 INCREMENT BY 1;
+BEGIN
+    EXECUTE IMMEDIATE 'DROP TABLE PRODUCT_OPTION CASCADE CONSTRAINTS';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -942 THEN RAISE; END IF;
+END;
+/
 
-CREATE TABLE product_option (
-    product_option_id NUMBER PRIMARY KEY, -- 상품 옵션 번호 (기본키)
-    product_id NUMBER NOT NULL, -- 상품 번호 (외래키, product 테이블 참조)
-    product_color_id NUMBER NOT NULL, -- 상품 색상 번호 (외래키, product_color 테이블 참조)
-    product_size_id NUMBER NOT NULL, -- 상품 사이즈 번호 (외래키, product_size 테이블 참조)
-    add_price NUMBER DEFAULT 0, -- 추가 금액
-    stock NUMBER DEFAULT 0, -- 재고 수량
-    visible VARCHAR2(1) NOT NULL, -- 판매 여부(Y/N)
-    FOREIGN KEY (product_id) REFERENCES product(product_id),
-    FOREIGN KEY (product_color_id) REFERENCES product_color(product_color_id),
-    FOREIGN KEY (product_size_id) REFERENCES product_size(product_size_id)
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE PRODUCT_OPTION_SEQ';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -2289 THEN RAISE; END IF;
+END;
+/
+
+CREATE SEQUENCE PRODUCT_OPTION_SEQ
+    START WITH 1
+    INCREMENT BY 1
+    NOCACHE
+    NOCYCLE;
+
+CREATE TABLE PRODUCT_OPTION (
+    PRODUCTOPTION_ID     NUMBER    NOT NULL,
+    PRODUCT_ID           NUMBER    NOT NULL,
+    PRODUCTCOLOR_ID      NUMBER    NULL,
+    PRODUCTVARIANT_ID    NUMBER    NULL,
+    ADD_PRICE            NUMBER    DEFAULT 0 NOT NULL,
+    STOCK                NUMBER    DEFAULT 0 NOT NULL,
+    VISIBLE              CHAR(1)   DEFAULT 'Y' NOT NULL,
+
+    CONSTRAINT PK_PRODUCT_OPTION PRIMARY KEY (PRODUCTOPTION_ID),
+    CONSTRAINT FK_PRODUCT_OPTION_PRODUCT
+        FOREIGN KEY (PRODUCT_ID) REFERENCES PRODUCT (PRODUCT_ID),
+    CONSTRAINT FK_PRODUCT_OPTION_COLOR
+        FOREIGN KEY (PRODUCTCOLOR_ID) REFERENCES PRODUCT_COLOR (PRODUCTCOLOR_ID),
+    CONSTRAINT FK_PRODUCT_OPTION_VARIANT
+        FOREIGN KEY (PRODUCTVARIANT_ID) REFERENCES PRODUCT_VARIANT (PRODUCTVARIANT_ID),
+    CONSTRAINT CK_PRODUCT_OPTION_PRICE
+        CHECK (ADD_PRICE >= 0),
+    CONSTRAINT CK_PRODUCT_OPTION_STOCK
+        CHECK (STOCK >= 0),
+    CONSTRAINT CK_PRODUCT_OPTION_VISIBLE
+        CHECK (VISIBLE IN ('Y', 'N'))
 );
 
--- 코멘트
-COMMENT ON TABLE product_option IS '상품 옵션';
-COMMENT ON COLUMN product_option.product_option_id IS '상품 옵션 번호';
-COMMENT ON COLUMN product_option.product_id IS '상품 번호';
-COMMENT ON COLUMN product_option.product_color_id IS '상품 색상 번호';
-COMMENT ON COLUMN product_option.product_size_id IS '상품 사이즈 번호';
-COMMENT ON COLUMN product_option.add_price IS '추가 금액';
-COMMENT ON COLUMN product_option.stock IS '재고 수량';
-COMMENT ON COLUMN product_option.visible IS '판매 여부(Y/N)';
+COMMENT ON TABLE PRODUCT_OPTION IS '상품 판매 옵션';
+COMMENT ON COLUMN PRODUCT_OPTION.PRODUCTOPTION_ID IS '상품 옵션 번호';
+COMMENT ON COLUMN PRODUCT_OPTION.PRODUCT_ID IS '상품 번호';
+COMMENT ON COLUMN PRODUCT_OPTION.PRODUCTCOLOR_ID IS '상품 색상 번호';
+COMMENT ON COLUMN PRODUCT_OPTION.PRODUCTVARIANT_ID IS '상품 규격 번호';
+COMMENT ON COLUMN PRODUCT_OPTION.ADD_PRICE IS '추가 금액';
+COMMENT ON COLUMN PRODUCT_OPTION.STOCK IS '재고 수량';
+COMMENT ON COLUMN PRODUCT_OPTION.VISIBLE IS '판매 여부(Y/N)';
 
--- 예시 데이터 등록 (Mock Data)
-INSERT INTO product_option (product_option_id, product_id, product_color_id, product_size_id, add_price, stock, visible) VALUES (product_option_seq.NEXTVAL, 1, 1, 1, 1, 10, 'Y');
-INSERT INTO product_option (product_option_id, product_id, product_color_id, product_size_id, add_price, stock, visible) VALUES (product_option_seq.NEXTVAL, 2, 2, 2, 2, 50, 'Y');
-INSERT INTO product_option (product_option_id, product_id, product_color_id, product_size_id, add_price, stock, visible) VALUES (product_option_seq.NEXTVAL, 3, 3, 3, 3, 30, 'Y');
-COMMIT;
+-- 샘플 등록 예시
+-- INSERT INTO PRODUCT_OPTION (
+--     PRODUCTOPTION_ID, PRODUCT_ID,
+--     PRODUCTCOLOR_ID, PRODUCTVARIANT_ID,
+--     ADD_PRICE, STOCK, VISIBLE
+-- )
+-- VALUES (
+--     PRODUCT_OPTION_SEQ.NEXTVAL,
+--     1,
+--     1,
+--     1,
+--     0,
+--     50,
+--     'Y'
+-- );
+--
+-- COMMIT;
+
+SELECT *
+FROM PRODUCT_OPTION
+ORDER BY PRODUCT_ID, PRODUCTOPTION_ID;

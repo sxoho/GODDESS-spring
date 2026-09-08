@@ -38,7 +38,7 @@ public class ProductColorImage {
     @Column(name = "is_main", nullable = false, length = 1)
     private String isMain;
 
-    @Column(name = "image_type", nullable = false, length = 50)
+    @Column(name = "image_type", nullable = false, length = 30)
     private String imageType;
 
     @Builder.Default

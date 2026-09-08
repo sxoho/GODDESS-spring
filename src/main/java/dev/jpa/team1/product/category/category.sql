@@ -1,98 +1,252 @@
-DROP TABLE category CASCADE CONSTRAINTS;
-DROP SEQUENCE category_seq;
+-- ============================================================
+-- GODDESS / CATEGORY
+-- 최종 ERD 기준: 뷰티 카테고리
+-- ============================================================
 
--- CATEGORY 시퀀스 및 테이블 생성
-CREATE SEQUENCE category_seq START WITH 1 INCREMENT BY 1 NOCACHE;
+BEGIN
+    EXECUTE IMMEDIATE 'DROP TABLE CATEGORY CASCADE CONSTRAINTS';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -942 THEN RAISE; END IF;
+END;
+/
 
-CREATE TABLE category (
-    category_id NUMBER PRIMARY KEY,
-    parent_id NUMBER,
-    name VARCHAR2(100) NOT NULL,
-    description VARCHAR2(255),
-    sort_order NUMBER NOT NULL,
-    visible VARCHAR2(1) DEFAULT 'Y' NOT NULL,
-    created_at TIMESTAMP DEFAULT SYSDATE,
-    CONSTRAINT fk_category_parent
-        FOREIGN KEY (parent_id) REFERENCES category(category_id),
-    CONSTRAINT ck_category_visible
-        CHECK (visible IN ('Y', 'N'))
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE CATEGORY_SEQ';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -2289 THEN RAISE; END IF;
+END;
+/
+
+CREATE SEQUENCE CATEGORY_SEQ
+    START WITH 1
+    INCREMENT BY 1
+    NOCACHE
+    NOCYCLE;
+
+CREATE TABLE CATEGORY (
+    CATEGORY_ID   NUMBER         NOT NULL,
+    PARENT_ID     NUMBER         NULL,
+    NAME          VARCHAR2(100)  NOT NULL,
+    DESCRIPTION   VARCHAR2(255)  NULL,
+    SORT_ORDER    NUMBER         DEFAULT 1 NOT NULL,
+    VISIBLE       CHAR(1)        DEFAULT 'Y' NOT NULL,
+    CREATED_AT    DATE           DEFAULT SYSDATE NOT NULL,
+
+    CONSTRAINT PK_CATEGORY PRIMARY KEY (CATEGORY_ID),
+    CONSTRAINT FK_CATEGORY_PARENT
+        FOREIGN KEY (PARENT_ID) REFERENCES CATEGORY (CATEGORY_ID),
+    CONSTRAINT CK_CATEGORY_VISIBLE
+        CHECK (VISIBLE IN ('Y', 'N'))
 );
 
-COMMENT ON TABLE category IS '상품 카테고리';
-COMMENT ON COLUMN category.category_id IS '카테고리 번호';
-COMMENT ON COLUMN category.parent_id IS '상위 카테고리 번호';
-COMMENT ON COLUMN category.name IS '카테고리명';
-COMMENT ON COLUMN category.description IS '카테고리 설명';
-COMMENT ON COLUMN category.sort_order IS '출력 순서';
-COMMENT ON COLUMN category.visible IS '사용 여부(Y/N)';
-COMMENT ON COLUMN category.created_at IS '등록일';
+COMMENT ON TABLE CATEGORY IS '뷰티 상품 카테고리';
+COMMENT ON COLUMN CATEGORY.CATEGORY_ID IS '카테고리 번호';
+COMMENT ON COLUMN CATEGORY.PARENT_ID IS '상위 카테고리 번호';
+COMMENT ON COLUMN CATEGORY.NAME IS '카테고리명';
+COMMENT ON COLUMN CATEGORY.DESCRIPTION IS '카테고리 설명';
+COMMENT ON COLUMN CATEGORY.SORT_ORDER IS '출력 순서';
+COMMENT ON COLUMN CATEGORY.VISIBLE IS '사용 여부(Y/N)';
+COMMENT ON COLUMN CATEGORY.CREATED_AT IS '등록일';
 
--- 대분류 등록
-INSERT INTO category(category_id, parent_id, name, description, sort_order, visible)
-VALUES(category_seq.NEXTVAL, NULL, '여성', '여성 상품 카테고리', 1, 'Y');
+-- ============================================================
+-- 기본 카테고리
+-- 대분류: 메이크업 / 스킨케어 / 헤어 / 바디 / 향수 / 뷰티소품
+-- ============================================================
 
-INSERT INTO category(category_id, parent_id, name, description, sort_order, visible)
-VALUES(category_seq.NEXTVAL, NULL, '남성', '남성 상품 카테고리', 2, 'Y');
+INSERT INTO CATEGORY
+    (CATEGORY_ID, PARENT_ID, NAME, DESCRIPTION, SORT_ORDER, VISIBLE)
+VALUES
+    (CATEGORY_SEQ.NEXTVAL, NULL, '메이크업', '메이크업 상품', 1, 'Y');
 
-INSERT INTO category(category_id, parent_id, name, description, sort_order, visible)
-VALUES(category_seq.NEXTVAL, NULL, '액세서리', '액세서리 상품 카테고리', 3, 'Y');
+INSERT INTO CATEGORY
+    (CATEGORY_ID, PARENT_ID, NAME, DESCRIPTION, SORT_ORDER, VISIBLE)
+VALUES
+    (CATEGORY_SEQ.NEXTVAL, NULL, '스킨케어', '스킨케어 상품', 2, 'Y');
 
--- 하위 카테고리 등록
-INSERT INTO category(category_id, parent_id, name, description, sort_order, visible)
-VALUES(category_seq.NEXTVAL,(SELECT category_id FROM category WHERE name = '여성' AND parent_id IS NULL),'상의','여성 상의 상품', 1, 'Y');
+INSERT INTO CATEGORY
+    (CATEGORY_ID, PARENT_ID, NAME, DESCRIPTION, SORT_ORDER, VISIBLE)
+VALUES
+    (CATEGORY_SEQ.NEXTVAL, NULL, '헤어', '헤어 상품', 3, 'Y');
 
-INSERT INTO category(category_id, parent_id, name, description, sort_order, visible)
-VALUES(category_seq.NEXTVAL,(SELECT category_id FROM category WHERE name = '여성' AND parent_id IS NULL),'하의','여성 하의 상품', 2, 'Y');
+INSERT INTO CATEGORY
+    (CATEGORY_ID, PARENT_ID, NAME, DESCRIPTION, SORT_ORDER, VISIBLE)
+VALUES
+    (CATEGORY_SEQ.NEXTVAL, NULL, '바디', '바디케어 상품', 4, 'Y');
+
+INSERT INTO CATEGORY
+    (CATEGORY_ID, PARENT_ID, NAME, DESCRIPTION, SORT_ORDER, VISIBLE)
+VALUES
+    (CATEGORY_SEQ.NEXTVAL, NULL, '향수', '향수 상품', 5, 'Y');
+
+INSERT INTO CATEGORY
+    (CATEGORY_ID, PARENT_ID, NAME, DESCRIPTION, SORT_ORDER, VISIBLE)
+VALUES
+    (CATEGORY_SEQ.NEXTVAL, NULL, '뷰티소품', '뷰티 도구 및 소품', 6, 'Y');
+
+-- 메이크업 하위 카테고리
+INSERT INTO CATEGORY
+    (CATEGORY_ID, PARENT_ID, NAME, DESCRIPTION, SORT_ORDER, VISIBLE)
+VALUES
+    (
+        CATEGORY_SEQ.NEXTVAL,
+        (SELECT CATEGORY_ID FROM CATEGORY WHERE NAME = '메이크업' AND PARENT_ID IS NULL),
+        '페이스',
+        '베이스, 파운데이션, 쿠션',
+        1,
+        'Y'
+    );
+
+INSERT INTO CATEGORY
+    (CATEGORY_ID, PARENT_ID, NAME, DESCRIPTION, SORT_ORDER, VISIBLE)
+VALUES
+    (
+        CATEGORY_SEQ.NEXTVAL,
+        (SELECT CATEGORY_ID FROM CATEGORY WHERE NAME = '메이크업' AND PARENT_ID IS NULL),
+        '립',
+        '립스틱, 틴트, 립밤',
+        2,
+        'Y'
+    );
+
+INSERT INTO CATEGORY
+    (CATEGORY_ID, PARENT_ID, NAME, DESCRIPTION, SORT_ORDER, VISIBLE)
+VALUES
+    (
+        CATEGORY_SEQ.NEXTVAL,
+        (SELECT CATEGORY_ID FROM CATEGORY WHERE NAME = '메이크업' AND PARENT_ID IS NULL),
+        '아이',
+        '아이섀도, 아이라이너, 마스카라',
+        3,
+        'Y'
+    );
+
+INSERT INTO CATEGORY
+    (CATEGORY_ID, PARENT_ID, NAME, DESCRIPTION, SORT_ORDER, VISIBLE)
+VALUES
+    (
+        CATEGORY_SEQ.NEXTVAL,
+        (SELECT CATEGORY_ID FROM CATEGORY WHERE NAME = '메이크업' AND PARENT_ID IS NULL),
+        '치크',
+        '블러셔, 하이라이터',
+        4,
+        'Y'
+    );
+
+INSERT INTO CATEGORY
+    (CATEGORY_ID, PARENT_ID, NAME, DESCRIPTION, SORT_ORDER, VISIBLE)
+VALUES
+    (
+        CATEGORY_SEQ.NEXTVAL,
+        (SELECT CATEGORY_ID FROM CATEGORY WHERE NAME = '메이크업' AND PARENT_ID IS NULL),
+        '브로우',
+        '아이브로우 상품',
+        5,
+        'Y'
+    );
+
+-- 스킨케어 하위 카테고리
+INSERT INTO CATEGORY
+    (CATEGORY_ID, PARENT_ID, NAME, DESCRIPTION, SORT_ORDER, VISIBLE)
+VALUES
+    (
+        CATEGORY_SEQ.NEXTVAL,
+        (SELECT CATEGORY_ID FROM CATEGORY WHERE NAME = '스킨케어' AND PARENT_ID IS NULL),
+        '클렌징',
+        '클렌저 및 리무버',
+        1,
+        'Y'
+    );
+
+INSERT INTO CATEGORY
+    (CATEGORY_ID, PARENT_ID, NAME, DESCRIPTION, SORT_ORDER, VISIBLE)
+VALUES
+    (
+        CATEGORY_SEQ.NEXTVAL,
+        (SELECT CATEGORY_ID FROM CATEGORY WHERE NAME = '스킨케어' AND PARENT_ID IS NULL),
+        '토너',
+        '토너 및 미스트',
+        2,
+        'Y'
+    );
+
+INSERT INTO CATEGORY
+    (CATEGORY_ID, PARENT_ID, NAME, DESCRIPTION, SORT_ORDER, VISIBLE)
+VALUES
+    (
+        CATEGORY_SEQ.NEXTVAL,
+        (SELECT CATEGORY_ID FROM CATEGORY WHERE NAME = '스킨케어' AND PARENT_ID IS NULL),
+        '세럼',
+        '세럼 및 앰플',
+        3,
+        'Y'
+    );
+
+INSERT INTO CATEGORY
+    (CATEGORY_ID, PARENT_ID, NAME, DESCRIPTION, SORT_ORDER, VISIBLE)
+VALUES
+    (
+        CATEGORY_SEQ.NEXTVAL,
+        (SELECT CATEGORY_ID FROM CATEGORY WHERE NAME = '스킨케어' AND PARENT_ID IS NULL),
+        '크림',
+        '크림 및 보습',
+        4,
+        'Y'
+    );
+
+INSERT INTO CATEGORY
+    (CATEGORY_ID, PARENT_ID, NAME, DESCRIPTION, SORT_ORDER, VISIBLE)
+VALUES
+    (
+        CATEGORY_SEQ.NEXTVAL,
+        (SELECT CATEGORY_ID FROM CATEGORY WHERE NAME = '스킨케어' AND PARENT_ID IS NULL),
+        '선케어',
+        '선크림 및 자외선 차단',
+        5,
+        'Y'
+    );
+
+-- 헤어 하위 카테고리
+INSERT INTO CATEGORY
+    (CATEGORY_ID, PARENT_ID, NAME, DESCRIPTION, SORT_ORDER, VISIBLE)
+VALUES
+    (
+        CATEGORY_SEQ.NEXTVAL,
+        (SELECT CATEGORY_ID FROM CATEGORY WHERE NAME = '헤어' AND PARENT_ID IS NULL),
+        '샴푸',
+        '샴푸',
+        1,
+        'Y'
+    );
+
+INSERT INTO CATEGORY
+    (CATEGORY_ID, PARENT_ID, NAME, DESCRIPTION, SORT_ORDER, VISIBLE)
+VALUES
+    (
+        CATEGORY_SEQ.NEXTVAL,
+        (SELECT CATEGORY_ID FROM CATEGORY WHERE NAME = '헤어' AND PARENT_ID IS NULL),
+        '트리트먼트',
+        '트리트먼트 및 컨디셔너',
+        2,
+        'Y'
+    );
+
+INSERT INTO CATEGORY
+    (CATEGORY_ID, PARENT_ID, NAME, DESCRIPTION, SORT_ORDER, VISIBLE)
+VALUES
+    (
+        CATEGORY_SEQ.NEXTVAL,
+        (SELECT CATEGORY_ID FROM CATEGORY WHERE NAME = '헤어' AND PARENT_ID IS NULL),
+        '헤어컬러',
+        '염색 및 헤어 컬러 상품',
+        3,
+        'Y'
+    );
 
 COMMIT;
 
--- 남성 하위 카테고리
-INSERT INTO category(category_id, parent_id, name, description, sort_order, visible)
-VALUES(category_seq.NEXTVAL, (SELECT category_id FROM category WHERE name='남성' AND parent_id IS NULL), '상의', '남성 상의 상품', 1, 'Y');
-
-INSERT INTO category(category_id, parent_id, name, description, sort_order, visible)
-VALUES(category_seq.NEXTVAL, (SELECT category_id FROM category WHERE name='남성' AND parent_id IS NULL), '하의', '남성 하의 상품', 2, 'Y');
-
--- 액세서리 하위 카테고리
-INSERT INTO category(category_id, parent_id, name, description, sort_order, visible)
-VALUES(category_seq.NEXTVAL, (SELECT category_id FROM category WHERE name='액세서리' AND parent_id IS NULL), '신발', '신발 상품', 1, 'Y');
-
-INSERT INTO category(category_id, parent_id, name, description, sort_order, visible)
-VALUES(category_seq.NEXTVAL, (SELECT category_id FROM category WHERE name='액세서리' AND parent_id IS NULL), '모자', '모자 상품', 2, 'Y');
-
-COMMIT;
-
--- 전체 목록
-SELECT category_id, parent_id, name, description,
-       sort_order, visible, created_at
-FROM category
-ORDER BY parent_id NULLS FIRST, sort_order, category_id;
-
--- 상세 조회
-SELECT category_id, parent_id, name, description,
-       sort_order, visible, created_at
-FROM category
-WHERE category_id = 1;
-
--- 수정
-UPDATE category
-SET name = '아우터',
-    description = '재킷과 코트 상품',
-    sort_order = 3,
-    visible = 'Y'
-WHERE category_id = 1;
-
-COMMIT;
-
--- 비활성화
-UPDATE category
-SET visible = 'N'
-WHERE category_id = 1;
-
-COMMIT;
-
--- 삭제
-DELETE FROM category
-WHERE category_id = 1;
-
-COMMIT;
+-- 확인
+SELECT CATEGORY_ID, PARENT_ID, NAME, DESCRIPTION, SORT_ORDER, VISIBLE, CREATED_AT
+FROM CATEGORY
+ORDER BY PARENT_ID NULLS FIRST, SORT_ORDER, CATEGORY_ID;
