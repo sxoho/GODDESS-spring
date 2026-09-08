@@ -18,4 +18,8 @@ public class MyPageUpdateRequestDto {
     private String address1;
 
     private String address2;
+
+    private String skinType;
+
+    private String personalColor;
 }

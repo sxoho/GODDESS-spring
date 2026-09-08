@@ -3,17 +3,37 @@ package dev.jpa.team1.member.mypage;
 import dev.jpa.team1.member.member.Member;
 import dev.jpa.team1.member.member.MemberRepository;
 import dev.jpa.team1.member.member.MemberResponseDto;
-
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class MyPageService {
 
     private final MemberRepository memberRepository;
+
+
+    private static final Set<String> VALID_SKIN_TYPES =
+            Set.of(
+                    "DRY",
+                    "OILY",
+                    "COMBINATION",
+                    "SENSITIVE",
+                    "NORMAL",
+                    "DEHYDRATED"
+            );
+
+
+    private static final Set<String> VALID_PERSONAL_COLORS =
+            Set.of(
+                    "SPRING_WARM",
+                    "SUMMER_COOL",
+                    "AUTUMN_WARM",
+                    "WINTER_COOL"
+            );
 
 
     /**
@@ -90,6 +110,8 @@ public class MyPageService {
      * 우편번호
      * 기본 주소
      * 상세 주소
+     * 피부 타입
+     * 퍼스널 컬러
      */
     @Transactional
     public MemberResponseDto update(
@@ -173,14 +195,80 @@ public class MyPageService {
 
 
         /**
-         * Member Entity 수정
+         * 피부 타입 검증
+         *
+         * null 또는 빈 문자열은
+         * 선택하지 않은 상태로 허용한다.
+         */
+        String skinType =
+                normalizeNullableValue(
+                        requestDto.getSkinType()
+                );
+
+
+        if (
+                skinType != null &&
+                !VALID_SKIN_TYPES.contains(
+                        skinType
+                )
+        ) {
+
+            throw new IllegalArgumentException(
+                    "올바르지 않은 피부 타입입니다."
+            );
+        }
+
+
+        /**
+         * 퍼스널 컬러 검증
+         *
+         * null 또는 빈 문자열은
+         * 선택하지 않은 상태로 허용한다.
+         */
+        String personalColor =
+                normalizeNullableValue(
+                        requestDto.getPersonalColor()
+                );
+
+
+        if (
+                personalColor != null &&
+                !VALID_PERSONAL_COLORS.contains(
+                        personalColor
+                )
+        ) {
+
+            throw new IllegalArgumentException(
+                    "올바르지 않은 퍼스널 컬러입니다."
+            );
+        }
+
+
+        /**
+         * 기본 회원 정보 수정
          */
         member.myPageUpdate(
-                requestDto.getLoginId(),
-                requestDto.getNickname(),
+                requestDto.getLoginId().trim(),
+                requestDto.getNickname().trim(),
                 requestDto.getZipcode(),
                 requestDto.getAddress1(),
                 requestDto.getAddress2()
+        );
+
+
+        /**
+         * 현재 피부 타입 수정
+         */
+        member.skinTypeUpdate(
+                skinType
+        );
+
+
+        /**
+         * 현재 퍼스널 컬러 수정
+         */
+        member.personalColorUpdate(
+                personalColor
         );
 
 
@@ -188,7 +276,31 @@ public class MyPageService {
                 member
         );
     }
-    
+
+
+    /**
+     * null / 빈 문자열 정리
+     *
+     * React의 "선택하기" 값은
+     * 빈 문자열 또는 null로 전달될 수 있으므로
+     * DB에는 null로 저장한다.
+     */
+    private String normalizeNullableValue(
+            String value
+    ) {
+
+        if (
+                value == null ||
+                value.isBlank()
+        ) {
+            return null;
+        }
+
+
+        return value.trim();
+    }
+
+
     /**
      * 마이페이지 비밀번호 변경
      *
