@@ -74,7 +74,19 @@ public class ProductController {
             String sort,
 
             @RequestParam(name = "keyword", required = false)
-            String keyword
+            String keyword,
+
+            // PRODUCT 추천 필터
+            // React ProductList에서 comma-separated 값으로 전달될 수 있다.
+            // 예: skinType=건성,복합성 / personalColor=봄웜,여름쿨
+            @RequestParam(name = "skinType", required = false)
+            String skinType,
+
+            @RequestParam(name = "personalColor", required = false)
+            String personalColor,
+
+            @RequestParam(name = "aiApplyEnabled", required = false)
+            String aiApplyEnabled
     ) {
 
         return service.findPage(
@@ -83,7 +95,10 @@ public class ProductController {
                 mainCategoryId,
                 categoryId,
                 sort,
-                keyword
+                keyword,
+                skinType,
+                personalColor,
+                aiApplyEnabled
         );
     }
 
