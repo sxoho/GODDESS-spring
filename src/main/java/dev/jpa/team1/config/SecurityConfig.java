@@ -54,44 +54,13 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
-//                        // 인증 없이 열어둘 엔드포인트
-//                        .requestMatchers(
-//                                "/api/auth/**",
-//
-//                                "/product/**",
-//                                "/category/**",
-//                                "/product_color/**",
-//                                "/product_color_info/**",
-//                                "/product_color_image/**",
-//
-//                                "/images/**",
-//                                "/product_size/**",
-//                                "/product_option/**",
-//                                "/wishlist/**",
-//
-//                                "/swagger-ui/**",
-//                                "/v3/api-docs/**",
-//                                "/swagger-ui.html"
-//                        ).permitAll()
-//
-//                        // 회원가입 / 로그인 / 중복 검사
-//                        .requestMatchers(
-//                                "/member/save",
-//                                "/member/login",
-//                                "/member/check_id",
-//                                "/member/check_email",
-//                                "/member/check_nickname"
-//                        ).permitAll()
-//
-//                        // 관리자 전용 엔드포인트
-//                        .requestMatchers("/api/admin/**")
-//                                .hasRole("ADMIN")
-//
-//                        // 그 외 요청은 인증 필요
-//                        .anyRequest()
-//                                .authenticated()
+                        // 로그인/토큰 발급은 인증 없이 접근
+                        .requestMatchers("/api/auth/**").permitAll()
 
-                        // 테스트 중 모든 요청 허용
+                        // 장바구니는 반드시 JWT 인증 필요
+                        .requestMatchers("/api/commerce/cart/**").authenticated()
+
+                        // 기존 프로젝트 영향 최소화를 위해 나머지는 현재 설정 유지
                         .anyRequest().permitAll()
                 )
 

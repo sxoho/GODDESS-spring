@@ -5,6 +5,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,65 +18,74 @@ public class CartController {
 
     private final CartService cartService;
 
-//    // 장바구니 담기 API
-//    @PostMapping
-//    public ResponseEntity<ApiResponse<CartResponseDto>> addCartItem(
-//            @AuthenticationPrincipal UserDetails userDetails,
-//            @Valid @RequestBody CartRequestDto requestDto) {
-//
-//        CartResponseDto response = cartService.addCartItem(userDetails.getUsername(), requestDto);
-//        return ResponseEntity
-//                .status(HttpStatus.CREATED)
-//                .body(ApiResponse.success(response));
-//    }
-
-    // 장바구니 담기 API (JWT 임시 비활성화)
+    /**
+     * 장바구니 담기
+     * JWT의 subject(loginId)가 UserDetails.getUsername()으로 전달된다.
+     */
     @PostMapping
-    public ResponseEntity<ApiResponse<CartResponseDto>> addCartItemWithNoAuth(
-            @RequestParam(name = "loginId") String loginId,
-            @Valid @RequestBody CartRequestDto requestDto) {
+    public ResponseEntity<ApiResponse<CartResponseDto>> addCartItem(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @Valid @RequestBody CartRequestDto requestDto
+    ) {
+        CartResponseDto response = cartService.addCartItem(
+                userDetails.getUsername(),
+                requestDto
+        );
 
-        CartResponseDto response = cartService.addCartItem(loginId, requestDto);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponse.success(response));
     }
 
-    // 내 장바구니 리스트 조회 API
-//    @GetMapping
-//    public ResponseEntity<ApiResponse<List<CartResponseDto>>> getMyCart(
-//            @AuthenticationPrincipal UserDetails userDetails) {
-//
-//        List<CartResponseDto> response = cartService.getMyCart(userDetails.getUsername());
-//        return ResponseEntity.ok(ApiResponse.success(response));
-//    }
-
-    // 내 장바구니 리스트 조회 API (JWT 임시 비활성화)
+    /**
+     * 현재 로그인한 회원의 장바구니 조회
+     */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<CartResponseDto>>> getMyCartWithNoAuth(
-            @RequestParam(name = "loginId") String loginId) {
-
-        List<CartResponseDto> response = cartService.getMyCart(loginId);
-        return ResponseEntity.ok(ApiResponse.success(response));
+    public ResponseEntity<ApiResponse<List<CartResponseDto>>> getMyCart(
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        cartService.getMyCart(userDetails.getUsername())
+                )
+        );
     }
 
-//    // 장바구니 항목 삭제 API
-//    @DeleteMapping("/{cartId}")
-//    public ResponseEntity<ApiResponse<Void>> deleteCartItem(
-//            @AuthenticationPrincipal UserDetails userDetails,
-//            @PathVariable Long cartId) {
-//
-//        cartService.deleteCartItem(userDetails.getUsername(), cartId);
-//        return ResponseEntity.ok(ApiResponse.success("장바구니에서 상품이 삭제되었습니다."));
-//    }
+    /**
+     * 장바구니 수량 변경
+     */
+    @PutMapping("/{cartId}/quantity")
+    public ResponseEntity<ApiResponse<CartResponseDto>> updateQuantity(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable(name = "cartId") Long cartId,
+            @Valid @RequestBody CartQuantityRequestDto requestDto
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        cartService.updateQuantity(
+                                userDetails.getUsername(),
+                                cartId,
+                                requestDto
+                        )
+                )
+        );
+    }
 
-    // 장바구니 항목 삭제 API (JWT 임시 비활성화)
+    /**
+     * 장바구니 항목 삭제
+     */
     @DeleteMapping("/{cartId}")
-    public ResponseEntity<ApiResponse<Void>> deleteCartItemWithNoAuth(
-            @RequestParam(name = "loginId") String loginId,
-            @PathVariable(name = "cartId") Long cartId) {
+    public ResponseEntity<ApiResponse<Void>> deleteCartItem(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable(name = "cartId") Long cartId
+    ) {
+        cartService.deleteCartItem(
+                userDetails.getUsername(),
+                cartId
+        );
 
-        cartService.deleteCartItem(loginId, cartId);
-        return ResponseEntity.ok(ApiResponse.success("장바구니에서 상품이 삭제되었습니다."));
+        return ResponseEntity.ok(
+                ApiResponse.success("장바구니에서 상품이 삭제되었습니다.")
+        );
     }
 }
