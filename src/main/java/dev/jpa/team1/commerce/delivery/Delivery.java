@@ -7,7 +7,6 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-
 @Entity
 @Table(name = "delivery")
 @Getter
@@ -58,6 +57,10 @@ public class Delivery {
 
     @Column(name = "complete_date")
     private LocalDateTime completeDate;
+
+    public void updateStatus(String status) {
+        this.status = status;
+    }
 
     public void updateTracking(
             @NotBlank(message = "택배사 이름은 필수 입력값입니다.") String company,

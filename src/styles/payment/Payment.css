@@ -1,0 +1,253 @@
+.payment-page-wrapper {
+  --rose: #efe3e2;
+  --ink: #2b2929;
+  --muted: #827d7b;
+  --line: #ece9e8;
+  width: min(1280px, 100%);
+  margin: 0 auto;
+  padding: 64px 52px 90px;
+  color: var(--ink);
+  background: #fff;
+  font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.payment-page-header {
+  margin-bottom: 42px;
+}
+
+.payment-page-header > span,
+.payment-summary-kicker {
+  display: block;
+  margin-bottom: 10px;
+  color: #938d8b;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: .13em;
+}
+
+.payment-page-header h1 {
+  margin: 0;
+  font-size: clamp(38px, 5vw, 58px);
+  line-height: .95;
+  font-weight: 500;
+  letter-spacing: -.045em;
+}
+
+.payment-page-header p {
+  margin: 13px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.payment-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 64px;
+  align-items: start;
+}
+
+.payment-main {
+  border-top: 1px solid #2f2d2d;
+}
+
+.payment-section-heading {
+  min-height: 64px;
+  display: grid;
+  grid-template-columns: 38px 1fr;
+  align-items: center;
+  gap: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.payment-methods {
+  display: grid;
+  gap: 12px;
+  padding: 24px 0;
+}
+
+.payment-method-card {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  gap: 14px;
+  align-items: center;
+  padding: 18px 16px;
+  border: 1px solid #e4e0de;
+  background: #fff;
+  cursor: pointer;
+}
+
+.payment-method-card.selected {
+  border-color: #d7c4c1;
+  background: #fbf6f5;
+}
+
+.payment-method-card input {
+  position: absolute;
+  opacity: 0;
+}
+
+.method-radio {
+  width: 15px;
+  height: 15px;
+  border: 1px solid #cfc9c7;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.payment-method-card.selected .method-radio {
+  border: 4px solid #b46478;
+}
+
+.method-copy strong,
+.method-copy small {
+  display: block;
+}
+
+.method-copy strong {
+  margin-bottom: 5px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.method-copy small {
+  color: #918c89;
+  font-size: 9px;
+}
+
+.payment-guide {
+  margin-top: 10px;
+  padding: 18px;
+  background: var(--rose);
+  color: #665e5c;
+}
+
+.payment-guide strong {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 9px;
+  letter-spacing: .08em;
+}
+
+.payment-guide p {
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.65;
+}
+
+.payment-summary-card {
+  position: sticky;
+  top: 28px;
+  padding: 28px;
+  border: 1px solid #e6e1df;
+  background: #fbfaf9;
+}
+
+.payment-summary-card h2 {
+  margin: 0 0 24px;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.payment-summary-lines {
+  display: grid;
+  gap: 12px;
+}
+
+.payment-summary-lines > div,
+.payment-total {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.payment-summary-lines > div {
+  color: #777270;
+  font-size: 10px;
+}
+
+.payment-summary-lines strong {
+  color: #403d3c;
+  font-weight: 500;
+}
+
+.payment-total {
+  align-items: flex-end;
+  margin-top: 20px;
+  padding-top: 17px;
+  border-top: 1px solid #dfdad8;
+}
+
+.payment-total span {
+  font-size: 10px;
+  letter-spacing: .06em;
+}
+
+.payment-total strong {
+  font-size: 23px;
+  font-weight: 500;
+  letter-spacing: -.03em;
+}
+
+.payment-agreement {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 22px 0 16px;
+  color: #777270;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.payment-agreement input {
+  margin: 1px 0 0;
+  accent-color: #b46478;
+}
+
+.payment-submit {
+  width: 100%;
+  min-height: 46px;
+  border: 0;
+  border-radius: 999px;
+  background: #6f6b67;
+  color: #fff;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.payment-submit:disabled {
+  background: #d9d6d4;
+  cursor: default;
+}
+
+.payment-security-note {
+  margin: 11px 0 0;
+  color: #9a9593;
+  font-size: 9px;
+  text-align: center;
+}
+
+.payment-state {
+  min-height: 560px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #777270;
+  font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12px;
+}
+
+@media (max-width: 900px) {
+  .payment-page-wrapper {
+    padding: 42px 22px 60px;
+  }
+
+  .payment-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .payment-summary-card {
+    position: static;
+  }
+}

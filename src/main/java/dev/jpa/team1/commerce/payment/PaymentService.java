@@ -21,42 +21,99 @@ public class PaymentService {
     private final MemberRepository memberRepository;
 
     @Transactional
-    public PaymentResponseDto processPayment(String loginId, PaymentApprovalRequestDto requestDto) {
-        Member member = memberRepository.findByLoginId(loginId)
-                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+    public PaymentResponseDto processPayment(
+            String loginId,
+            PaymentApprovalRequestDto requestDto
+    ) {
+        Member member =
+                memberRepository.findByLoginId(loginId)
+                        .orElseThrow(() ->
+                                new CustomException(
+                                        ErrorCode.MEMBER_NOT_FOUND
+                                )
+                        );
 
-        Orders order = ordersRepository.findById(requestDto.getOrderId())
-                .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
+        Orders order =
+                ordersRepository.findById(requestDto.getOrderId())
+                        .orElseThrow(() ->
+                                new CustomException(
+                                        ErrorCode.ORDER_NOT_FOUND
+                                )
+                        );
 
-        // 1. 권한 및 상태 검증
         if (!order.getMember().getId().equals(member.getId())) {
-            throw new CustomException(ErrorCode.INVALID_INPUT_VALUE); // 권한 없음 예외로 처리
-        }
-        if (!"PENDING_PAYMENT".equals(order.getStatus())) {
-            throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "결제 대기 상태의 주문이 아닙니다.");
+            throw new CustomException(
+                    ErrorCode.INVALID_INPUT_VALUE,
+                    "본인의 주문만 결제할 수 있습니다."
+            );
         }
 
-        // 2. 결제 금액 변조 검증 (DB 주문 총액 vs 클라이언트 결제 요청 금액)
+        /*
+         * GODDESS DB CK_ORDERS_STATUS 기준:
+         * 결제 전 주문은 ORDERED.
+         */
+        if (!"ORDERED".equals(order.getStatus())) {
+            throw new CustomException(
+                    ErrorCode.INVALID_INPUT_VALUE,
+                    "결제 가능한 주문 상태가 아닙니다."
+            );
+        }
+
+        if (paymentRepository.existsByOrdersId(order.getId())) {
+            throw new CustomException(
+                    ErrorCode.INVALID_INPUT_VALUE,
+                    "이미 결제 처리된 주문입니다."
+            );
+        }
+
+        /*
+         * 클라이언트 금액 변조 방지:
+         * 실제 ORDERS.TOTAL 값과 반드시 같아야 한다.
+         */
         if (!order.getTotal().equals(requestDto.getAmount())) {
-            log.error("결제 금액 불일치 - Order Total: {}, Request Amount: {}", order.getTotal(), requestDto.getAmount());
-            throw new CustomException(ErrorCode.INVALID_INPUT_VALUE, "결제 요청 금액이 실제 주문 금액과 일치하지 않습니다.");
+            log.error(
+                    "결제 금액 불일치 - Order Total: {}, Request Amount: {}",
+                    order.getTotal(),
+                    requestDto.getAmount()
+            );
+
+            throw new CustomException(
+                    ErrorCode.INVALID_INPUT_VALUE,
+                    "결제 요청 금액이 실제 주문 금액과 일치하지 않습니다."
+            );
         }
 
-        // 3. 결제 내역(Payment) 생성
-        Payment payment = Payment.builder()
-                .orders(order)
-                .paymentMethod(requestDto.getPaymentMethod())
-                .amount(requestDto.getAmount())
-                .status("COMPLETED") // 결제 완료
-                .approvalNo(requestDto.getApprovalNo())
-                .build();
-        
-        Payment savedPayment = paymentRepository.save(payment);
+        /*
+         * GODDESS DB CK_PAYMENT_STATUS 허용값:
+         *
+         * READY / PAID / CANCELLED / FAILED
+         *
+         * 결제 승인 성공 시 PAID.
+         */
+        Payment payment =
+                Payment.builder()
+                        .orders(order)
+                        .paymentMethod(requestDto.getPaymentMethod())
+                        .amount(requestDto.getAmount())
+                        .status("PAID")
+                        .approvalNo(requestDto.getApprovalNo())
+                        .build();
 
-        // 4. 주문(Orders) 상태 업데이트 -> 상품 준비 중
-        order.updateStatus("PREPARING_PRODUCT");
+        Payment savedPayment =
+                paymentRepository.save(payment);
 
-        log.info("결제 승인 및 처리 완료 - Payment ID: {}, Order ID: {}", savedPayment.getId(), order.getId());
+        /*
+         * 결제 완료 직후 주문 상태는 PAID.
+         * PREPARING은 이후 상품 준비 단계에서 변경.
+         */
+        order.updateStatus("PAID");
+
+        log.info(
+                "결제 승인 완료 - Payment ID: {}, Order ID: {}",
+                savedPayment.getId(),
+                order.getId()
+        );
+
         return PaymentResponseDto.from(savedPayment);
     }
 }

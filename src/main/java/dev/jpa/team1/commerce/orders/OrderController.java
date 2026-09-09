@@ -7,12 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -23,29 +18,62 @@ public class OrderController {
 
     private final OrderService ordersService;
 
-    // 주문서 생성 (결제 대기 상태) API
+    /**
+     * 주문 생성
+     */
     @PostMapping
     public ResponseEntity<ApiResponse<OrderResponseDto>> createOrder(
             @AuthenticationPrincipal UserDetails userDetails,
             @Valid @RequestBody OrderCreateRequestDto requestDto) {
 
-        OrderResponseDto response = ordersService.createOrder(userDetails.getUsername(), requestDto);
+        OrderResponseDto response = ordersService.createOrder(
+                userDetails.getUsername(),
+                requestDto
+        );
+
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponse.success(response));
     }
-    
+
+    /**
+     * 로그인 회원의 주문내역 목록
+     */
     @GetMapping("/my")
     public ResponseEntity<ApiResponse<List<OrderResponseDto>>> getMyOrders(
-        @RequestParam("loginId") String loginId) {
+            @AuthenticationPrincipal UserDetails userDetails) {
 
         List<OrderResponseDto> response =
-                ordersService.getMyOrders(loginId);
+                ordersService.getMyOrders(
+                        userDetails.getUsername()
+                );
 
         return ResponseEntity.ok(
                 ApiResponse.success(response)
         );
     }
 
-    // TODO: 결제기능 추가
+    /**
+     * 로그인 회원의 주문 상세
+     *
+     * ORDERS
+     * + ORDER_DETAIL
+     * + PAYMENT
+     * + DELIVERY
+     */
+    @GetMapping("/{orderId}")
+    public ResponseEntity<ApiResponse<OrderHistoryDetailResponseDto>> getMyOrder(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable("orderId") Long orderId) {
+
+        OrderHistoryDetailResponseDto response =
+                ordersService.getMyOrder(
+                        userDetails.getUsername(),
+                        orderId
+                );
+
+        return ResponseEntity.ok(
+                ApiResponse.success(response)
+        );
+    }
 }

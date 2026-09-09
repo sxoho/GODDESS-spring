@@ -30,7 +30,7 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(); // Bcrypt 해싱 알고리즘 사용
+        return new BCryptPasswordEncoder();
     }
 
     @Bean
@@ -41,30 +41,19 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
         http
                 .csrf(AbstractHttpConfigurer::disable)
-
-                // CORS 설정 적용
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-
                 .authorizeHttpRequests(auth -> auth
-
-                        // 로그인/토큰 발급은 인증 없이 접근
                         .requestMatchers("/api/auth/**").permitAll()
-
-                        // 장바구니는 반드시 JWT 인증 필요
                         .requestMatchers("/api/commerce/cart/**").authenticated()
-
-                        // 기존 프로젝트 영향 최소화를 위해 나머지는 현재 설정 유지
+                        .requestMatchers("/api/commerce/orders/**").authenticated()
+                        .requestMatchers("/api/commerce/payment/**").authenticated()
                         .anyRequest().permitAll()
                 )
-
-                // JWT 인증 필터 활성화
                 .addFilterBefore(
                         new JwtAuthenticationFilter(jwtTokenProvider),
                         UsernamePasswordAuthenticationFilter.class
@@ -75,9 +64,7 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-
         CorsConfiguration configuration = new CorsConfiguration();
-
         configuration.setAllowedOrigins(
                 List.of(
                         "http://localhost:5173",
@@ -86,29 +73,14 @@ public class SecurityConfig {
                         "http://localhost:8501"
                 )
         );
-
         configuration.setAllowedMethods(
-                List.of(
-                        "GET",
-                        "POST",
-                        "PUT",
-                        "DELETE",
-                        "PATCH",
-                        "OPTIONS"
-                )
+                List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
         );
-
         configuration.setAllowedHeaders(List.of("*"));
-
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-
-        source.registerCorsConfiguration(
-                "/**",
-                configuration
-        );
-
+        source.registerCorsConfiguration("/**", configuration);
         return source;
     }
 }
