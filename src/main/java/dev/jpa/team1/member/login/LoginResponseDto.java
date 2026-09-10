@@ -14,28 +14,43 @@ public class LoginResponseDto {
     private String nickname;
 
     /**
-     * 회원 등급 번호
+     * 회원 등급
      */
     private Long gradeId;
-
     private String gradeName;
     private String status;
 
     /**
-     * JWT Access Token
+     * JWT
      */
     private String accessToken;
+    private String refreshToken;
 
-    public static LoginResponseDto from(Member member, String accessToken) {
+
+    public static LoginResponseDto from(
+            Member member,
+            String accessToken,
+            String refreshToken
+    ) {
+
         return new LoginResponseDto(
                 member.getId(),
                 member.getLoginId(),
                 member.getName(),
                 member.getNickname(),
-                member.getGrade() != null ? member.getGrade().getId() : null,
-                member.getGrade() != null ? member.getGrade().getName() : null,
+
+                member.getGrade() != null
+                        ? member.getGrade().getId()
+                        : null,
+
+                member.getGrade() != null
+                        ? member.getGrade().getName()
+                        : null,
+
                 member.getStatus(),
-                accessToken
+
+                accessToken,
+                refreshToken
         );
     }
 }

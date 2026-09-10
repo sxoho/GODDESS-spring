@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
 @Service
 @RequiredArgsConstructor
 public class LoginService {
@@ -17,8 +18,14 @@ public class LoginService {
     private final MemberRepository memberRepository;
 
     private final LoginHistoryService loginHistoryService;
-    
+
     private final JwtTokenProvider jwtTokenProvider;
+
+    /**
+     * Refresh Token 저장
+     */
+    private final RefreshTokenRepository refreshTokenRepository;
+
 
     /**
      * 로그인
@@ -31,7 +38,7 @@ public class LoginService {
     ) {
 
         /**
-         * 아이디로 회원 조회
+         * 회원 조회
          */
         Member member =
                 memberRepository
@@ -44,8 +51,11 @@ public class LoginService {
                                 )
                         );
 
+
         /**
          * 비밀번호 확인
+         *
+         * 현재 GODDESS 기존 로그인 방식 유지
          */
         if (
                 !member
@@ -55,11 +65,6 @@ public class LoginService {
                         )
         ) {
 
-            /**
-             * 회원은 존재하지만
-             * 비밀번호가 틀린 경우
-             * 로그인 실패 기록
-             */
             loginHistoryService.save(
                     member,
                     "N",
@@ -67,14 +72,15 @@ public class LoginService {
                     device
             );
 
+
             throw new IllegalArgumentException(
                     "아이디 또는 비밀번호가 일치하지 않습니다."
             );
         }
 
+
         /**
-         * 탈퇴 / 비활성 회원
-         * 로그인 차단
+         * 탈퇴 / 비활성 회원 로그인 차단
          */
         if (
                 !"ACTIVE".equals(
@@ -89,10 +95,12 @@ public class LoginService {
                     device
             );
 
+
             throw new IllegalArgumentException(
                     "로그인할 수 없는 회원입니다."
             );
         }
+
 
         /**
          * 로그인 성공 기록
@@ -104,40 +112,104 @@ public class LoginService {
                 device
         );
 
+
         /**
-         * 회원 등급에 따른 권한 설정
+         * 회원 등급별 권한
          *
-         * GRADE_ID
          * 1 = USER
          * 2 = GOLD
          * 3 = VIP
          * 4 = ADMIN
          */
-        String role = "ROLE_USER";
+        String role =
+                "ROLE_USER";
 
-        if (member.getGrade() != null && member.getGrade().getId() != null) {
-            Long gradeId = member.getGrade().getId();
+
+        if (
+                member.getGrade() != null &&
+                member.getGrade().getId() != null
+        ) {
+
+            Long gradeId =
+                    member.getGrade().getId();
+
 
             if (gradeId == 2L) {
-                role = "ROLE_GOLD";
+                role =
+                        "ROLE_GOLD";
+
             } else if (gradeId == 3L) {
-                role = "ROLE_VIP";
+                role =
+                        "ROLE_VIP";
+
             } else if (gradeId == 4L) {
-                role = "ROLE_ADMIN";
+                role =
+                        "ROLE_ADMIN";
             }
         }
 
+
         /**
-         * JWT Access Token 발급
+         * Access Token 생성
          */
-        String accessToken = jwtTokenProvider.createAccessToken(
-                member.getLoginId(),
-                role
+        String accessToken =
+                jwtTokenProvider
+                        .createAccessToken(
+                                member.getLoginId(),
+                                role
+                        );
+
+
+        /**
+         * Refresh Token 생성
+         */
+        String refreshToken =
+                jwtTokenProvider
+                        .createRefreshToken(
+                                member.getLoginId()
+                        );
+
+
+        /**
+         * 회원당 Refresh Token 1개 유지
+         * 기존 토큰이 있으면 갱신하고,
+         * 없으면 새로 저장한다.
+         */
+        RefreshToken refreshTokenEntity =
+                refreshTokenRepository
+                        .findByLoginId(
+                                member.getLoginId()
+                        )
+                        .orElseGet(() ->
+                                RefreshToken
+                                        .builder()
+                                        .loginId(
+                                                member.getLoginId()
+                                        )
+                                        .token(
+                                                refreshToken
+                                        )
+                                        .build()
+                        );
+
+
+        refreshTokenEntity.updateToken(
+                refreshToken
         );
 
+
+        refreshTokenRepository.save(
+                refreshTokenEntity
+        );
+
+
+        /**
+         * 로그인 결과 반환
+         */
         return LoginResponseDto.from(
                 member,
-                accessToken
+                accessToken,
+                refreshToken
         );
     }
 }
