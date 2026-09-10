@@ -1,17 +1,27 @@
 package dev.jpa.team1.commerce.orders;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
 import java.util.List;
 
 @Getter
 @NoArgsConstructor
 public class OrderCreateRequestDto {
 
-    @NotEmpty(message = "주문할 장바구니 아이템을 선택해주세요.")
+    /**
+     * 장바구니 주문 시 사용한다.
+     * BUY NOW 주문에서는 null 또는 빈 배열이어도 된다.
+     */
     private List<Long> cartIds;
+
+    /**
+     * 바로구매(BUY NOW) 시 사용한다.
+     * 장바구니를 거치지 않고 상품 옵션과 수량을 직접 주문한다.
+     */
+    private List<@Valid BuyNowItemRequestDto> buyNowItems;
 
     // 배송지(DELIVERY) 정보 맵핑
     @NotBlank(message = "수령인을 입력해주세요.")
@@ -29,5 +39,5 @@ public class OrderCreateRequestDto {
     @NotBlank(message = "상세 주소를 입력해주세요.")
     private String address2;
 
-    private String request; // 배송 요청사항
+    private String request;
 }
