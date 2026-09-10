@@ -1,11 +1,13 @@
 package dev.jpa.team1.commerce.payment;
 
+import dev.jpa.team1.commerce.orderdetail.OrderDetail;
 import dev.jpa.team1.commerce.orders.Orders;
 import dev.jpa.team1.commerce.orders.OrdersRepository;
 import dev.jpa.team1.exception.CustomException;
 import dev.jpa.team1.exception.ErrorCode;
 import dev.jpa.team1.member.member.Member;
 import dev.jpa.team1.member.member.MemberRepository;
+import dev.jpa.team1.product.productoption.ProductOption;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -50,9 +52,9 @@ public class PaymentService {
 
         /*
          * GODDESS DB CK_ORDERS_STATUS 기준:
-         * 결제 전 주문은 ORDERED.
+         * 결제 전 주문은 PAYMENT_WAITING.
          */
-        if (!"ORDERED".equals(order.getStatus())) {
+        if (!"PAYMENT_WAITING".equals(order.getStatus())) {
             throw new CustomException(
                     ErrorCode.INVALID_INPUT_VALUE,
                     "결제 가능한 주문 상태가 아닙니다."
@@ -81,6 +83,17 @@ public class PaymentService {
                     ErrorCode.INVALID_INPUT_VALUE,
                     "결제 요청 금액이 실제 주문 금액과 일치하지 않습니다."
             );
+        }
+
+        /*
+         * 주문 생성(PAYMENT_WAITING) 단계에서는 재고를 차감하지 않는다.
+         * 결제 승인 직전에 주문 상세의 옵션/수량을 다시 확인하면서 차감한다.
+         * 재고 부족 시 decreaseStock()이 예외를 발생시키고,
+         * @Transactional에 의해 결제 저장/상태 변경도 함께 롤백된다.
+         */
+        for (OrderDetail detail : order.getOrderDetails()) {
+            ProductOption option = detail.getProductOption();
+            option.decreaseStock(detail.getQuantity());
         }
 
         /*

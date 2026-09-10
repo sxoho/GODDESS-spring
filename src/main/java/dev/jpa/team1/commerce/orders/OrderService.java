@@ -133,7 +133,7 @@ public class OrderService {
                                 .deliveryFee(deliveryFee)
                                 .discount(discount)
                                 .total(total)
-                                .status("ORDERED")
+                                .status("PAYMENT_WAITING")
                                 .build()
                 );
 
@@ -145,8 +145,10 @@ public class OrderService {
             int unitOriginalPrice = getUnitOriginalPrice(option);
             int unitSalePrice = getUnitSalePrice(option, unitOriginalPrice);
 
-            option.decreaseStock(quantity);
-
+            /*
+             * 결제 대기 단계에서는 재고를 차감하지 않는다.
+             * 실제 재고 차감은 결제 승인(PAID) 시 PaymentService에서 처리한다.
+             */
             orderDetailRepository.save(
                     OrderDetail.builder()
                             .orders(order)
