@@ -14,3 +14,17 @@ INSERT INTO refresh_token (token_id, login_id, token, created_at, updated_at) VA
 INSERT INTO refresh_token (token_id, login_id, token, created_at, updated_at) VALUES (refresh_token_seq.NEXTVAL, '테스트_login_id_2', '테스트_token_2', SYSDATE, SYSDATE);
 INSERT INTO refresh_token (token_id, login_id, token, created_at, updated_at) VALUES (refresh_token_seq.NEXTVAL, '테스트_login_id_3', '테스트_token_3', SYSDATE, SYSDATE);
 COMMIT;
+
+------------------------------------------------------------------------------
+
+SELECT
+    TOKEN_ID,
+    LOGIN_ID,
+    TOKEN,
+    CREATED_AT,
+    UPDATED_AT
+FROM REFRESH_TOKEN
+ORDER BY TOKEN_ID DESC;
+
+SELECT *
+FROM REFRESH_TOKEN;

@@ -25,12 +25,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
+import java.time.Duration;
+
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.time.Duration;
+
 
 @Service
 @RequiredArgsConstructor
@@ -46,10 +48,16 @@ public class MemberPhotoService {
     /**
      * 회원 사진 AI FastAPI 주소
      *
-     * 기본:
-     * http://localhost:11103
+     * Team 5
+     * H200 회원 사진 검증 FastAPI
+     *
+     * Port:
+     * 11501
+     *
+     * 현재:
+     * http://139.150.91.194:11501
      */
-    @Value("${MEMBER_PHOTO_AI_BASE_URL:http://localhost:11103}")
+    @Value("${MEMBER_PHOTO_AI_BASE_URL:http://139.150.91.194:11501}")
     private String memberPhotoAiBaseUrl;
 
 
@@ -61,10 +69,9 @@ public class MemberPhotoService {
 
 
     /**
-     * 현재 허용하는 이미지 확장자
+     * 허용 이미지 확장자
      */
-    private static final Set<String>
-            ALLOWED_EXTENSIONS =
+    private static final Set<String> ALLOWED_EXTENSIONS =
             Set.of(
                     ".jpg",
                     ".jpeg",
@@ -74,6 +81,7 @@ public class MemberPhotoService {
 
     /**
      * 최대 파일 크기
+     *
      * 10MB
      */
     private static final long MAX_FILE_SIZE =
@@ -81,11 +89,10 @@ public class MemberPhotoService {
 
 
     /**
-     * 회원의 대표 사진 조회
+     * 회원 대표 사진 조회
      */
     @Transactional(readOnly = true)
-    public Optional<MemberPhotoResponseDto>
-    findMainPhoto(
+    public Optional<MemberPhotoResponseDto> findMainPhoto(
             Long memberId
     ) {
 
@@ -105,11 +112,10 @@ public class MemberPhotoService {
      * 회원 전체 사진 조회
      *
      * 현재 화면에서는 대표 사진 1장만 사용하지만
-     * 추후 여러 사진 기능 확장을 위해 유지
+     * 추후 여러 사진 기능 확장을 위해 유지한다.
      */
     @Transactional(readOnly = true)
-    public List<MemberPhotoResponseDto>
-    findByMemberId(
+    public List<MemberPhotoResponseDto> findByMemberId(
             Long memberId
     ) {
 
@@ -128,22 +134,28 @@ public class MemberPhotoService {
     /**
      * 회원 사진 AI 검사
      *
-     * 사진은 저장하지 않는다.
+     * 사진 자체는 저장하지 않는다.
      *
-     * React
-     * → Spring
-     * → FastAPI
+     * Spring
+     * → H200 FastAPI 11501
      *
-     * Spring에서는
-     * 이미지를 Base64 문자열로 변환한 뒤
-     * JSON 형식으로 FastAPI에 전달한다.
+     * 검사 항목:
+     *
+     * 1. 얼굴 검출 여부
+     * 2. 정면 얼굴 여부
+     * 3. 얼굴 중심 편차
+     * 4. 밝기
+     * 5. 너무 어두운지 여부
+     * 6. 너무 밝은지 여부
+     * 7. 선명도
+     * 8. 흐림 여부
+     * 9. 최종 사용 가능 여부
      */
     public MemberPhotoAiCheckDto checkPhoto(
             MultipartFile file
     ) {
 
         /**
-         * 기존 사진 등록과 동일한
          * 기본 파일 검사
          */
         validateFile(
@@ -183,7 +195,7 @@ public class MemberPhotoService {
 
 
             /**
-             * FastAPI로 보낼 JSON 생성
+             * FastAPI 요청 JSON
              *
              * {
              *   "image_base64": "...",
@@ -210,50 +222,51 @@ public class MemberPhotoService {
 
 
             /**
-             * Java 기본 HttpClient
+             * Java HttpClient
              */
             HttpClient client =
-                HttpClient
-                        .newBuilder()
-                        .version(
-                                HttpClient.Version.HTTP_1_1
-                        )
-                        .connectTimeout(
-                                Duration.ofSeconds(
-                                        10
-                                )
-                        )
-                        .build();
+                    HttpClient
+                            .newBuilder()
+                            .version(
+                                    HttpClient.Version.HTTP_1_1
+                            )
+                            .connectTimeout(
+                                    Duration.ofSeconds(
+                                            10
+                                    )
+                            )
+                            .build();
 
 
             /**
-             * FastAPI 요청
+             * 회원 사진 AI 검증 요청
              *
              * POST
-             * http://localhost:11103/member_photo_check
+             *
+             * http://139.150.91.194:11501/member_photo_check
              */
             HttpRequest request =
-                HttpRequest
-                        .newBuilder()
-                        .uri(
-                                URI.create(
-                                        memberPhotoAiBaseUrl
-                                                + "/member_photo_check"
-                                )
-                        )
-                        .timeout(
-                                Duration.ofSeconds(
-                                        30
-                                )
-                        )
-                        .header(
-                                "Content-Type",
-                                "application/json"
-                        )
-                        .header(
-                                "Accept",
-                                "application/json"
-                        )  
+                    HttpRequest
+                            .newBuilder()
+                            .uri(
+                                    URI.create(
+                                            memberPhotoAiBaseUrl
+                                                    + "/member_photo_check"
+                                    )
+                            )
+                            .timeout(
+                                    Duration.ofSeconds(
+                                            30
+                                    )
+                            )
+                            .header(
+                                    "Content-Type",
+                                    "application/json"
+                            )
+                            .header(
+                                    "Accept",
+                                    "application/json"
+                            )
                             .POST(
                                     HttpRequest
                                             .BodyPublishers
@@ -277,7 +290,7 @@ public class MemberPhotoService {
 
 
             /**
-             * FastAPI 오류 응답
+             * FastAPI HTTP 오류
              */
             if (
                     response.statusCode() < 200 ||
@@ -298,7 +311,7 @@ public class MemberPhotoService {
 
 
             /**
-             * 응답 없음
+             * 응답 데이터 없음
              */
             if (
                     responseBody == null ||
@@ -312,13 +325,20 @@ public class MemberPhotoService {
 
 
             /**
-             * FastAPI 응답
+             * FastAPI 응답 예시
              *
              * {
              *   "face_detected": true,
              *   "is_front": true,
+             *   "face_center_offset": 0.0218,
+             *   "brightness": 184.16,
+             *   "is_too_dark": false,
+             *   "is_too_bright": false,
+             *   "blur_score": 90.96,
+             *   "is_blurred": false,
+             *   "valid": true,
              *   "message":
-             *   "정면 얼굴 사진으로 확인되었습니다."
+             *   "AI 뷰티 체험에 사용할 수 있는 정상적인 얼굴 사진입니다."
              * }
              */
             JsonNode root =
@@ -328,6 +348,9 @@ public class MemberPhotoService {
                             );
 
 
+            /**
+             * 얼굴 검출 여부
+             */
             boolean faceDetected =
                     root
                             .path(
@@ -338,6 +361,9 @@ public class MemberPhotoService {
                             );
 
 
+            /**
+             * 정면 얼굴 여부
+             */
             boolean isFront =
                     root
                             .path(
@@ -348,6 +374,113 @@ public class MemberPhotoService {
                             );
 
 
+            /**
+             * 얼굴 중심 편차
+             *
+             * 얼굴 검출 실패 시 null 가능
+             */
+            Double faceCenterOffset =
+                    root.hasNonNull(
+                            "face_center_offset"
+                    )
+                            ? root
+                                    .get(
+                                            "face_center_offset"
+                                    )
+                                    .asDouble()
+                            : null;
+
+
+            /**
+             * 이미지 평균 밝기
+             *
+             * 검사할 수 없는 경우 null 가능
+             */
+            Double brightness =
+                    root.hasNonNull(
+                            "brightness"
+                    )
+                            ? root
+                                    .get(
+                                            "brightness"
+                                    )
+                                    .asDouble()
+                            : null;
+
+
+            /**
+             * 너무 어두운 사진 여부
+             */
+            boolean isTooDark =
+                    root
+                            .path(
+                                    "is_too_dark"
+                            )
+                            .asBoolean(
+                                    false
+                            );
+
+
+            /**
+             * 너무 밝은 사진 여부
+             */
+            boolean isTooBright =
+                    root
+                            .path(
+                                    "is_too_bright"
+                            )
+                            .asBoolean(
+                                    false
+                            );
+
+
+            /**
+             * 선명도 점수
+             *
+             * Laplacian 분산값
+             */
+            Double blurScore =
+                    root.hasNonNull(
+                            "blur_score"
+                    )
+                            ? root
+                                    .get(
+                                            "blur_score"
+                                    )
+                                    .asDouble()
+                            : null;
+
+
+            /**
+             * 흐림 여부
+             */
+            boolean isBlurred =
+                    root
+                            .path(
+                                    "is_blurred"
+                            )
+                            .asBoolean(
+                                    false
+                            );
+
+
+            /**
+             * AI BEAUTY 회원사진으로
+             * 최종 사용 가능한지 여부
+             */
+            boolean valid =
+                    root
+                            .path(
+                                    "valid"
+                            )
+                            .asBoolean(
+                                    false
+                            );
+
+
+            /**
+             * 사용자 안내 메시지
+             */
             String message =
                     root
                             .path(
@@ -358,9 +491,19 @@ public class MemberPhotoService {
                             );
 
 
+            /**
+             * 검사 결과 반환
+             */
             return new MemberPhotoAiCheckDto(
                     faceDetected,
                     isFront,
+                    faceCenterOffset,
+                    brightness,
+                    isTooDark,
+                    isTooBright,
+                    blurScore,
+                    isBlurred,
+                    valid,
                     message
             );
 
@@ -382,7 +525,17 @@ public class MemberPhotoService {
 
 
     /**
-     * 회원 사진 등록
+     * 회원 사진 등록 / 변경
+     *
+     * 처리 순서:
+     *
+     * 1. 회원 조회
+     * 2. 파일 기본 검사
+     * 3. FastAPI 11501 AI 검사
+     * 4. 부적합 사진이면 등록 중단
+     * 5. 기존 대표 사진 해제
+     * 6. 새 사진 파일 저장
+     * 7. DB 저장
      */
     @Transactional
     public MemberPhotoResponseDto upload(
@@ -415,13 +568,68 @@ public class MemberPhotoService {
 
 
         /**
-         * 3. 기존 대표 사진 해제
+         * 3. 회원 사진 AI 검사
          *
-         * 현재 화면에서는 사진 1장만 사용하지만
-         * 기존 사진은 DB에 남겨 추후 확장 가능하도록 함
+         * H200 FastAPI
+         * Port 11501
+         *
+         * 검사 항목:
+         *
+         * - 얼굴 검출
+         * - 정면 여부
+         * - 밝기
+         * - 과도한 밝기
+         * - 과도한 어두움
+         * - 흐림 여부
          */
-        Optional<MemberPhoto>
-                currentMainPhoto =
+        MemberPhotoAiCheckDto aiResult =
+                checkPhoto(
+                        file
+                );
+
+
+        /**
+         * 4. AI 검사 실패 시
+         * 회원 사진을 저장하지 않는다.
+         */
+        if (
+                !Boolean.TRUE.equals(
+                        aiResult.getValid()
+                )
+        ) {
+
+            String message =
+                    aiResult.getMessage();
+
+
+            if (
+                    message == null ||
+                    message.isBlank()
+            ) {
+
+                message =
+                        "AI 뷰티 체험에 사용할 수 없는 사진입니다.";
+            }
+
+
+            throw new IllegalArgumentException(
+                    message
+            );
+        }
+
+
+        /**
+         * 5. 기존 대표 사진 해제
+         *
+         * 중요:
+         *
+         * 새 사진이 AI 검사를 통과한 뒤에만
+         * 기존 대표 사진을 해제한다.
+         *
+         * 따라서 새 사진 검사 실패 시
+         * 기존 대표 사진은 그대로 유지된다.
+         */
+        Optional<MemberPhoto> currentMainPhoto =
                 memberPhotoRepository
                         .findFirstByMemberIdAndIsMainAndVisibleOrderByCreatedAtDesc(
                                 memberId,
@@ -441,7 +649,7 @@ public class MemberPhotoService {
 
 
         /**
-         * 4. 원본 파일명
+         * 6. 원본 파일명
          */
         String fileOrigin =
                 file.getOriginalFilename();
@@ -459,7 +667,7 @@ public class MemberPhotoService {
 
 
         /**
-         * 5. 확장자 추출
+         * 7. 확장자 추출
          */
         String extension =
                 getExtension(
@@ -468,13 +676,15 @@ public class MemberPhotoService {
 
 
         /**
-         * 6. 서버 저장 파일명 생성
+         * 8. 서버 저장 파일명 생성
          *
          * 예:
+         *
          * member_7_a34e41ff.jpg
          */
         String uniqueId =
-                UUID.randomUUID()
+                UUID
+                        .randomUUID()
                         .toString()
                         .substring(
                                 0,
@@ -491,10 +701,11 @@ public class MemberPhotoService {
 
 
         /**
-         * 7. 저장 폴더 생성
+         * 9. 저장 폴더 생성
          */
         Path uploadPath =
-                Paths.get(
+                Paths
+                        .get(
                                 UPLOAD_DIR
                         )
                         .toAbsolutePath()
@@ -514,7 +725,7 @@ public class MemberPhotoService {
 
 
         /**
-         * 8. 최종 저장 경로
+         * 10. 최종 저장 경로
          */
         Path savePath =
                 uploadPath
@@ -525,7 +736,7 @@ public class MemberPhotoService {
 
 
         /**
-         * 경로 이탈 방지
+         * 저장 경로 이탈 방지
          */
         if (
                 !savePath.startsWith(
@@ -540,7 +751,7 @@ public class MemberPhotoService {
 
 
         /**
-         * 9. 실제 파일 저장
+         * 11. 실제 파일 저장
          */
         Files.copy(
                 file.getInputStream(),
@@ -550,7 +761,7 @@ public class MemberPhotoService {
 
 
         /**
-         * 10. React에서 접근할 이미지 경로
+         * 12. React에서 접근할 이미지 경로
          */
         String filePath =
                 "/images/member/face/"
@@ -558,12 +769,13 @@ public class MemberPhotoService {
 
 
         /**
-         * 11. DB 저장
+         * 13. MEMBER_PHOTO DB 저장
          *
-         * 현재는 FACE만 사용
+         * 현재는 FACE 타입만 사용한다.
          */
         MemberPhoto memberPhoto =
-                MemberPhoto.builder()
+                MemberPhoto
+                        .builder()
                         .member(
                                 member
                         )
@@ -609,7 +821,7 @@ public class MemberPhotoService {
      * 사진 사용 중지
      *
      * 실제 파일과 DB 행을 삭제하지 않고
-     * visible = N 처리
+     * visible = N 처리한다.
      */
     @Transactional
     public void hidePhoto(
@@ -634,12 +846,15 @@ public class MemberPhotoService {
 
 
     /**
-     * 파일 검사
+     * 파일 기본 검사
      */
     private void validateFile(
             MultipartFile file
     ) {
 
+        /**
+         * 파일 존재 여부
+         */
         if (
                 file == null ||
                 file.isEmpty()
@@ -651,9 +866,12 @@ public class MemberPhotoService {
         }
 
 
+        /**
+         * 파일 크기 검사
+         */
         if (
-                file.getSize()
-                        > MAX_FILE_SIZE
+                file.getSize() >
+                MAX_FILE_SIZE
         ) {
 
             throw new IllegalArgumentException(
@@ -662,6 +880,9 @@ public class MemberPhotoService {
         }
 
 
+        /**
+         * 원본 파일명 검사
+         */
         String fileOrigin =
                 file.getOriginalFilename();
 
@@ -677,6 +898,9 @@ public class MemberPhotoService {
         }
 
 
+        /**
+         * 확장자 검사
+         */
         String extension =
                 getExtension(
                         fileOrigin
@@ -697,7 +921,7 @@ public class MemberPhotoService {
 
 
         /**
-         * MIME 타입 기본 검사
+         * MIME 타입 검사
          */
         String contentType =
                 file.getContentType();
@@ -718,7 +942,7 @@ public class MemberPhotoService {
 
 
     /**
-     * 확장자 추출
+     * 파일 확장자 추출
      */
     private String getExtension(
             String fileName
