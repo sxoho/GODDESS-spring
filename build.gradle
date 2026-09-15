@@ -46,6 +46,9 @@ dependencies {
     // Encryption
   // https://mvnrepository.com/artifact/commons-codec/commons-codec
     implementation 'commons-codec:commons-codec:1.16.0'
+    
+    // llm 웹메일 호스팅 기능 (번역)
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
 }
 
 tasks.named('test') {
