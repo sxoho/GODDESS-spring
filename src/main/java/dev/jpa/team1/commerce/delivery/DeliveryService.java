@@ -11,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 
 @Slf4j
 @Service
@@ -48,11 +47,18 @@ public class DeliveryService {
         Delivery delivery = deliveryRepository.findById(deliveryId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DELIVERY_NOT_FOUND));
 
-        // 배송 정보 엔티티 업데이트 로직 (엔티티 내부에 updateTracking 비즈니스 메서드가 있다고 가정)
-        delivery.updateTracking(requestDto.getCompany(), requestDto.getTrackingNo(), "SHIPPING");
-        
-        // 배송 시작일 설정 (필요 시 엔티티 내부 로직으로 캡슐화 가능)
-        delivery.updateShippingDate(LocalDateTime.now());
+        Orders order = delivery.getOrders();
+
+        if (!"PREPARING".equals(order.getStatus())) {
+            throw new CustomException(
+                    ErrorCode.INVALID_INPUT_VALUE,
+                    "상품준비중 주문만 배송 시작 처리할 수 있습니다."
+            );
+        }
+
+        // ERD의 company / tracking_no / shipping_date를 사용해 배송 시작 처리
+        delivery.markShipped(requestDto.getCompany(), requestDto.getTrackingNo());
+        order.updateStatus("SHIPPED");
 
         log.info("운송장 번호 등록 완료 - Delivery ID: {}, Tracking No: {}", deliveryId, requestDto.getTrackingNo());
         

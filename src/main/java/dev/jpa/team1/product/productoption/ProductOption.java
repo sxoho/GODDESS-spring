@@ -17,4 +17,5 @@ public class ProductOption {
     @Builder.Default @Column(nullable=false,length=1) private String visible="Y";
     public void update(ProductColor color,ProductVariant variant,Integer addPrice,Integer stock,String visible){this.productColor=color;this.productVariant=variant;this.addPrice=addPrice==null?0:addPrice;this.stock=stock==null?0:stock;this.visible=visible==null?"Y":visible;}
     public void decreaseStock(Integer quantity){ if(this.stock<quantity) throw new CustomException(ErrorCode.OUT_OF_STOCK); this.stock-=quantity; }
+    public void increaseStock(Integer quantity){ if(quantity==null || quantity<=0) return; this.stock+=quantity; }
 }

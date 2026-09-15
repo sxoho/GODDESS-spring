@@ -96,6 +96,10 @@ public class SecurityConfig {
                                 "/api/commerce/payment/**"
                         ).authenticated()
 
+                        .requestMatchers(
+                                "/api/commerce/admin/orders/**"
+                        ).authenticated()
+
                         .anyRequest().permitAll()
                 )
 

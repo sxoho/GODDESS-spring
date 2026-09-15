@@ -62,11 +62,39 @@ public class Delivery {
         this.status = status;
     }
 
+    public void markPreparing() {
+        this.status = "PREPARING";
+    }
+
+    /** 배송 시작: 운송장 등록 + 출고 시각 기록 */
+    public void markShipped(
+            @NotBlank(message = "택배사 이름은 필수 입력값입니다.") String company,
+            @NotBlank(message = "운송장 번호는 필수 입력값입니다.") String trackingNo
+    ) {
+        this.company = company;
+        this.trackingNo = trackingNo;
+        this.status = "SHIPPED";
+        this.shippingDate = LocalDateTime.now();
+    }
+
+    public void markShipping() {
+        this.status = "SHIPPING";
+    }
+
+    public void markDelivered() {
+        this.status = "DELIVERED";
+        this.completeDate = LocalDateTime.now();
+    }
+
+    public void cancel() {
+        this.status = "CANCELLED";
+    }
+
+    /** 기존 관리자 운송장 API와의 호환용 */
     public void updateTracking(
             @NotBlank(message = "택배사 이름은 필수 입력값입니다.") String company,
             @NotBlank(message = "운송장 번호는 필수 입력값입니다.") String trackingNo,
             String status) {
-
         this.company = company;
         this.trackingNo = trackingNo;
         this.status = status;

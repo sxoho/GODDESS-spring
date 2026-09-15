@@ -61,4 +61,13 @@ public class Orders {
     public void updateStatus(String status) {
         this.status = status;
     }
+
+    public void requestCancel() {
+        this.status = "CANCEL_REQUESTED";
+    }
+
+    public void cancel() {
+        this.status = "CANCELLED";
+        this.cancelDate = LocalDateTime.now();
+    }
 }

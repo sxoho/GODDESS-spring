@@ -44,4 +44,9 @@ public class Payment {
 
     @Column(name = "cancel_date")
     private LocalDateTime cancelDate;
+
+    public void cancel() {
+        this.status = "CANCELLED";
+        this.cancelDate = LocalDateTime.now();
+    }
 }
