@@ -1,6 +1,40 @@
-package dev.jpa.team1.board.productreview; import lombok.*; import java.time.LocalDateTime;
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+package dev.jpa.team1.board.productreview;
+
+import lombok.*;
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ProductReviewResponseDto {
- private Long id; private Long memberId; private String memberNickname; private Long orderDetailId; private Long productId; private String productName; private Long beautySaveId; private String beautyImageUrl; private String title; private String content; private Integer rating; private String visible; private LocalDateTime createdAt; private LocalDateTime updatedAt;
- public static ProductReviewResponseDto from(ProductReview r){return builder().id(r.getId()).memberId(r.getMember().getId()).memberNickname(r.getMember().getNickname()).orderDetailId(r.getOrderDetail().getId()).productId(r.getProduct().getId()).productName(r.getProduct().getName()).beautySaveId(r.getBeautySave()!=null?r.getBeautySave().getId():null).beautyImageUrl(r.getBeautySave()!=null&&r.getBeautySave().getBeautyTryonResult()!=null?r.getBeautySave().getBeautyTryonResult().getFilePath():null).title(r.getTitle()).content(r.getContent()).rating(r.getRating()).visible(r.getVisible()).createdAt(r.getCreatedAt()).updatedAt(r.getUpdatedAt()).build();}
+	private Long id;
+	private Long memberId;
+	private String memberNickname;
+	private Long orderDetailId;
+	private Long productId;
+	private String productName;
+	private Long beautySaveId;
+	private String beautyImageUrl;
+	private String title;
+	private String content;
+	private Integer rating;
+	private String visible;
+	private LocalDateTime createdAt;
+	private LocalDateTime updatedAt;
+
+	public static ProductReviewResponseDto from(ProductReview r) {
+		return builder().id(r.getId()).memberId(r.getMember().getId()).memberNickname(r.getMember().getNickname())
+				.orderDetailId(r.getOrderDetail() != null
+				        ? r.getOrderDetail().getId()
+				                : null).productId(r.getProduct().getId())
+				.productName(r.getProduct().getName())
+				.beautySaveId(r.getBeautySave() != null ? r.getBeautySave().getId() : null)
+				.beautyImageUrl(r.getBeautySave() != null && r.getBeautySave().getBeautyTryonResult() != null
+						? r.getBeautySave().getBeautyTryonResult().getFilePath()
+						: null)
+				.title(r.getTitle()).content(r.getContent()).rating(r.getRating()).visible(r.getVisible())
+				.createdAt(r.getCreatedAt()).updatedAt(r.getUpdatedAt()).build();
+	}
 }

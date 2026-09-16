@@ -37,8 +37,8 @@ public class ProductReviewService {
     private final BeautySaveRepository beautySaveRepository;
     private final ObjectMapper objectMapper;
 
-    @Value("${PRODUCT_REVIEW_LLM_BASE_URL:http://139.150.91.194:11131}")
-    private String productReviewLlmBaseUrl;
+    private String productReviewLlmBaseUrl =
+            "http://139.150.91.194:11550";
 
     @Value("${SpringBoot_FastAPI_KEY:}")
     private String fastApiKey;
@@ -195,6 +195,10 @@ public class ProductReviewService {
      * 공개 리뷰 최대 50개를 모아 FastAPI LLM 요약 API로 전달한다.
      */
     public ProductReviewAiSummaryDto getAiSummary(Long productId) {
+    	
+    	System.out.println("LLM BASE URL = " + productReviewLlmBaseUrl);
+    	System.out.println("LLM REQUEST URL = " + productReviewLlmBaseUrl + "/review-summary");
+    	
         Pageable pageable = PageRequest.of(
                 0,
                 50,
@@ -239,7 +243,7 @@ public class ProductReviewService {
                     .uri(URI.create(
                             productReviewLlmBaseUrl + "/review-summary"
                     ))
-                    .timeout(Duration.ofSeconds(60))
+                    .timeout(Duration.ofSeconds(180))
                     .header(
                             "Content-Type",
                             "application/json"

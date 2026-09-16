@@ -1,6 +1,29 @@
-package dev.jpa.team1.board.productreview; import jakarta.validation.constraints.*; import lombok.*;
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor
+package dev.jpa.team1.board.productreview;
+
+import jakarta.validation.constraints.*;
+import lombok.*;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class ProductReviewRequestDto {
- @NotNull private Long memberId; @NotNull private Long orderDetailId; @NotNull private Long productId; private Long beautySaveId;
- @NotBlank @Size(max=200) private String title; @NotBlank private String content; @NotNull @Min(1) @Max(5) private Integer rating;
+	@NotNull
+	private Long memberId;
+//	@NotNull 테스트 기간에는 null 허용
+	private Long orderDetailId;
+	@NotNull
+	private Long productId;
+	
+	private Long beautySaveId;
+	
+	@NotBlank
+	@Size(max = 200)
+	private String title;
+	@NotBlank
+	private String content;
+	@NotNull
+	@Min(1)
+	@Max(5)
+	private Integer rating;
 }
