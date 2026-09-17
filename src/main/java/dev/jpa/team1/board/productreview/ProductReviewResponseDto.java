@@ -9,32 +9,62 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class ProductReviewResponseDto {
-	private Long id;
-	private Long memberId;
-	private String memberNickname;
-	private Long orderDetailId;
-	private Long productId;
-	private String productName;
-	private Long beautySaveId;
-	private String beautyImageUrl;
-	private String title;
-	private String content;
-	private Integer rating;
-	private String visible;
-	private LocalDateTime createdAt;
-	private LocalDateTime updatedAt;
+    private Long id;
+    private Long memberId;
+    private String memberNickname;
+    private Long orderDetailId;
+    private Long productId;
+    private String productName;
+    private String colorName;
+    private String variantName;
+    private Long beautySaveId;
+    private String beautyImageUrl;
+    private String title;
+    private String content;
+    private Integer rating;
+    private String visible;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
-	public static ProductReviewResponseDto from(ProductReview r) {
-		return builder().id(r.getId()).memberId(r.getMember().getId()).memberNickname(r.getMember().getNickname())
-				.orderDetailId(r.getOrderDetail() != null
-				        ? r.getOrderDetail().getId()
-				                : null).productId(r.getProduct().getId())
-				.productName(r.getProduct().getName())
-				.beautySaveId(r.getBeautySave() != null ? r.getBeautySave().getId() : null)
-				.beautyImageUrl(r.getBeautySave() != null && r.getBeautySave().getBeautyTryonResult() != null
-						? r.getBeautySave().getBeautyTryonResult().getFilePath()
-						: null)
-				.title(r.getTitle()).content(r.getContent()).rating(r.getRating()).visible(r.getVisible())
-				.createdAt(r.getCreatedAt()).updatedAt(r.getUpdatedAt()).build();
-	}
+    public static ProductReviewResponseDto from(ProductReview r) {
+        return builder()
+                .id(r.getId())
+                .memberId(r.getMember().getId())
+                .memberNickname(r.getMember().getNickname())
+                .orderDetailId(
+                        r.getOrderDetail() != null
+                                ? r.getOrderDetail().getId()
+                                : null
+                )
+                .productId(r.getProduct().getId())
+                .productName(r.getProduct().getName())
+                .colorName(
+                        r.getOrderDetail() != null
+                                ? r.getOrderDetail().getColorName()
+                                : null
+                )
+                .variantName(
+                        r.getOrderDetail() != null
+                                ? r.getOrderDetail().getVariantName()
+                                : null
+                )
+                .beautySaveId(
+                        r.getBeautySave() != null
+                                ? r.getBeautySave().getId()
+                                : null
+                )
+                .beautyImageUrl(
+                        r.getBeautySave() != null
+                                && r.getBeautySave().getBeautyTryonResult() != null
+                                ? r.getBeautySave().getBeautyTryonResult().getFilePath()
+                                : null
+                )
+                .title(r.getTitle())
+                .content(r.getContent())
+                .rating(r.getRating())
+                .visible(r.getVisible())
+                .createdAt(r.getCreatedAt())
+                .updatedAt(r.getUpdatedAt())
+                .build();
+    }
 }

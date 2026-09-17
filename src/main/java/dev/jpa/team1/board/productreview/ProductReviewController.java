@@ -28,6 +28,14 @@ public class ProductReviewController {
         return service.findById(reviewId);
     }
 
+    // 주문상품 리뷰 작성 여부 확인
+    @GetMapping("/order-detail/{orderDetailId}/exists")
+    public boolean existsByOrderDetailId(
+            @PathVariable(name = "orderDetailId") Long orderDetailId
+    ) {
+        return service.existsByOrderDetailId(orderDetailId);
+    }
+
     // 상품 상세용 공개 리뷰 페이징
     @GetMapping("/product/{productId}/page")
     public Page<ProductReviewPublicResponseDto> findProductPage(

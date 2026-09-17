@@ -4,17 +4,19 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import dev.jpa.team1.commerce.orderdetail.OrderDetail;
-import dev.jpa.team1.commerce.orderdetail.OrderDetailRepository;
 import dev.jpa.team1.beauty.save.BeautySave;
 import dev.jpa.team1.beauty.save.BeautySaveRepository;
+import dev.jpa.team1.commerce.orderdetail.OrderDetail;
+import dev.jpa.team1.commerce.orderdetail.OrderDetailRepository;
 import dev.jpa.team1.member.member.Member;
 import dev.jpa.team1.member.member.MemberRepository;
 import dev.jpa.team1.product.product.Product;
-import dev.jpa.team1.product.product.ProductRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.*;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +25,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,34 +35,47 @@ public class ProductReviewService {
 
     private final ProductReviewRepository productReviewRepository;
     private final MemberRepository memberRepository;
-    private final ProductRepository productRepository;
     private final OrderDetailRepository orderDetailRepository;
     private final BeautySaveRepository beautySaveRepository;
+    private final ProductReviewAiSummaryCacheRepository aiSummaryCacheRepository;
     private final ObjectMapper objectMapper;
 
-    private String productReviewLlmBaseUrl =
-            "http://139.150.91.194:11550";
+    @Value("${PRODUCT_REVIEW_LLM_BASE_URL:http://139.150.91.194:11550}")
+    private String productReviewLlmBaseUrl;
 
     @Value("${SpringBoot_FastAPI_KEY:}")
     private String fastApiKey;
 
+    /**
+     * 구매한 주문 상세를 기준으로 리뷰 등록
+     *
+     * PRODUCT_ID는 클라이언트 값을 신뢰하지 않고
+     * ORDER_DETAIL -> PRODUCT_OPTION -> PRODUCT 관계에서 결정한다.
+     */
     @Transactional
     public ProductReviewResponseDto save(ProductReviewRequestDto requestDto) {
         Member member = memberRepository.findById(requestDto.getMemberId())
                 .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
 
-        Product product = productRepository.findById(requestDto.getProductId())
-                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
+        OrderDetail orderDetail = orderDetailRepository
+                .findById(requestDto.getOrderDetailId())
+                .orElseThrow(() -> new IllegalArgumentException("주문 상세 정보를 찾을 수 없습니다."));
 
-        OrderDetail orderDetail = null;
-        if (requestDto.getOrderDetailId() != null) {
-            if (productReviewRepository.existsByOrderDetailId(requestDto.getOrderDetailId())) {
-                throw new IllegalArgumentException("이미 리뷰를 작성한 주문 상품입니다.");
-            }
-
-            orderDetail = orderDetailRepository.findById(requestDto.getOrderDetailId())
-                    .orElseThrow(() -> new IllegalArgumentException("주문 상세 정보를 찾을 수 없습니다."));
+        if (!orderDetail.getOrders().getMember().getId().equals(member.getId())) {
+            throw new IllegalArgumentException("본인이 구매한 상품에만 리뷰를 작성할 수 있습니다.");
         }
+
+        if (!"DELIVERED".equals(orderDetail.getOrders().getStatus())) {
+            throw new IllegalArgumentException("배송 완료된 상품에만 리뷰를 작성할 수 있습니다.");
+        }
+
+        if (productReviewRepository.existsByOrderDetailId(orderDetail.getId())) {
+            throw new IllegalArgumentException("이미 리뷰를 작성한 주문 상품입니다.");
+        }
+
+        Product product = orderDetail
+                .getProductOption()
+                .getProduct();
 
         BeautySave beautySave = getBeautySave(
                 requestDto.getBeautySaveId(),
@@ -77,15 +93,23 @@ public class ProductReviewService {
                 .visible("Y")
                 .build();
 
-        return ProductReviewResponseDto.from(
-                productReviewRepository.save(review)
-        );
+        ProductReview saved = productReviewRepository.save(review);
+
+        // 리뷰 데이터가 바뀌었으므로 기존 AI 요약 캐시 무효화
+        invalidateAiSummary(product.getId());
+
+        return ProductReviewResponseDto.from(saved);
     }
 
     public ProductReviewResponseDto findById(Long reviewId) {
-        return ProductReviewResponseDto.from(
-                findReview(reviewId)
-        );
+        return ProductReviewResponseDto.from(findReview(reviewId));
+    }
+
+    /**
+     * 주문상품에 이미 리뷰가 작성되어 있는지 확인한다.
+     */
+    public boolean existsByOrderDetailId(Long orderDetailId) {
+        return productReviewRepository.existsByOrderDetailId(orderDetailId);
     }
 
     public Page<ProductReviewPublicResponseDto> findProductPage(
@@ -167,6 +191,8 @@ public class ProductReviewService {
                 beautySave
         );
 
+        invalidateAiSummary(review.getProduct().getId());
+
         return ProductReviewResponseDto.from(review);
     }
 
@@ -176,7 +202,11 @@ public class ProductReviewService {
                 .findByIdAndMemberId(reviewId, memberId)
                 .orElseThrow(() -> new IllegalArgumentException("본인이 작성한 리뷰만 삭제할 수 있습니다."));
 
+        Long productId = review.getProduct().getId();
+
         productReviewRepository.delete(review);
+
+        invalidateAiSummary(productId);
     }
 
     @Transactional
@@ -185,20 +215,33 @@ public class ProductReviewService {
             ProductReviewVisibleRequestDto requestDto
     ) {
         ProductReview review = findReview(reviewId);
+
         review.changeVisible(requestDto.getVisible());
+
+        invalidateAiSummary(review.getProduct().getId());
+
         return ProductReviewResponseDto.from(review);
     }
 
     /**
      * 상품별 AI 리뷰 요약
      *
-     * 공개 리뷰 최대 50개를 모아 FastAPI LLM 요약 API로 전달한다.
+     * 1) 캐시가 있으면 DB의 요약을 즉시 반환한다.
+     * 2) 리뷰 등록/수정/삭제/공개상태 변경 시 캐시를 삭제한다.
+     * 3) 캐시가 없는 첫 조회에서만 FastAPI LLM을 호출하고 결과를 다시 저장한다.
+     *
+     * 따라서 새로고침할 때마다 LLM을 재호출하지 않는다.
      */
+    @Transactional
     public ProductReviewAiSummaryDto getAiSummary(Long productId) {
-    	
-    	System.out.println("LLM BASE URL = " + productReviewLlmBaseUrl);
-    	System.out.println("LLM REQUEST URL = " + productReviewLlmBaseUrl + "/review-summary");
-    	
+        ProductReviewAiSummaryCache cached = aiSummaryCacheRepository
+                .findById(productId)
+                .orElse(null);
+
+        if (cached != null) {
+            return new ProductReviewAiSummaryDto(cached.getSummary());
+        }
+
         Pageable pageable = PageRequest.of(
                 0,
                 50,
@@ -227,15 +270,71 @@ public class ProductReviewService {
                 )
                 .collect(Collectors.joining("\n"));
 
+        String summary =
+                requestAiSummary(
+                        productId,
+                        reviewText
+                );;
+
+        aiSummaryCacheRepository.save(
+                ProductReviewAiSummaryCache.builder()
+                        .productId(productId)
+                        .summary(summary)
+                        .reviewCount(reviewPage.getTotalElements())
+                        .updatedAt(LocalDateTime.now())
+                        .build()
+        );
+
+        return new ProductReviewAiSummaryDto(summary);
+    }
+
+    public ProductReviewSummaryDto getSummary(Long productId) {
+        long count = productReviewRepository
+                .countByProductIdAndVisible(productId, "Y");
+
+        Double average = productReviewRepository
+                .findAverageRatingByProductId(productId);
+
+        double roundedAverage = Math.round(
+                (average == null ? 0.0 : average) * 10.0
+        ) / 10.0;
+
+        return new ProductReviewSummaryDto(
+                count,
+                roundedAverage
+        );
+    }
+
+    private String requestAiSummary(
+            Long productId,
+            String reviewText
+    ) {
         try {
+        	
+        	 System.out.println(
+                     "Spring FastAPI Key = "
+                             + (
+                                 fastApiKey != null && fastApiKey.length() >= 4
+                                 ? fastApiKey.substring(0, 4) + "****"
+                                 : "미설정"
+                             )
+             );
+        	 
             ObjectNode requestBody = objectMapper.createObjectNode();
+
             requestBody.put(
                     "SpringBoot_FastAPI_KEY",
                     fastApiKey
             );
+
             requestBody.put(
                     "content",
                     reviewText
+            );
+            
+            requestBody.put(
+                    "product_id",
+                    productId
             );
 
             HttpRequest request = HttpRequest
@@ -262,6 +361,12 @@ public class ProductReviewService {
                     .version(HttpClient.Version.HTTP_1_1)
                     .connectTimeout(Duration.ofSeconds(10))
                     .build();
+            
+            System.out.println(
+                    "AI SUMMARY 요청 URL = "
+                    + productReviewLlmBaseUrl
+                    + "/review-summary"
+            );
 
             HttpResponse<String> response = client.send(
                     request,
@@ -270,9 +375,22 @@ public class ProductReviewService {
 
             if (response.statusCode() < 200 ||
                     response.statusCode() >= 300) {
+
+                System.out.println(
+                        "FastAPI 응답 코드: "
+                                + response.statusCode()
+                );
+
+                System.out.println(
+                        "FastAPI 응답 내용: "
+                                + response.body()
+                );
+
                 throw new IllegalStateException(
                         "AI 리뷰 요약 서버 응답 오류: "
                                 + response.statusCode()
+                                + " / "
+                                + response.body()
                 );
             }
 
@@ -291,9 +409,7 @@ public class ProductReviewService {
                 );
             }
 
-            return new ProductReviewAiSummaryDto(
-                    summary
-            );
+            return summary;
 
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -307,24 +423,21 @@ public class ProductReviewService {
                     "AI 리뷰 요약 중 오류가 발생했습니다.",
                     e
             );
+            
+            
         }
+        
+        
     }
 
-    public ProductReviewSummaryDto getSummary(Long productId) {
-        long count = productReviewRepository
-                .countByProductIdAndVisible(productId, "Y");
-
-        Double average = productReviewRepository
-                .findAverageRatingByProductId(productId);
-
-        double roundedAverage = Math.round(
-                (average == null ? 0.0 : average) * 10.0
-        ) / 10.0;
-
-        return new ProductReviewSummaryDto(
-                count,
-                roundedAverage
-        );
+    /**
+     * 리뷰 변경 시 기존 요약을 삭제한다.
+     * 다음 AI 요약 조회에서만 다시 분석한다.
+     */
+    private void invalidateAiSummary(Long productId) {
+        aiSummaryCacheRepository
+                .findById(productId)
+                .ifPresent(aiSummaryCacheRepository::delete);
     }
 
     private ProductReview findReview(Long reviewId) {
