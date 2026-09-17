@@ -49,6 +49,8 @@ dependencies {
     
     // llm 웹메일 호스팅 기능 (번역)
     implementation 'org.springframework.boot:spring-boot-starter-mail'
+    
+    //테스트
 }
 
 tasks.named('test') {
