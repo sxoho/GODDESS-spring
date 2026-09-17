@@ -21,7 +21,7 @@ public class ReturnRequest {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "return_request_seq")
-    @SequenceGenerator(name = "return_request_seq", sequenceName = "return_request_seq", allocationSize = 1)
+    @SequenceGenerator(name = "return_request_seq", sequenceName = "return_seq", allocationSize = 1)
     @Column(name = "return_id")
     private Long id;
 

@@ -19,35 +19,54 @@ public class ReturnRequestController {
 
     private final ReturnRequestService returnRequestService;
 
-    // 반품/환불 신청 API (일반 사용자)
+    /** 사용자 반품 요청 */
     @PostMapping
     public ResponseEntity<ApiResponse<ReturnResponseDto>> createReturnRequest(
             @AuthenticationPrincipal UserDetails userDetails,
-            @Valid @RequestBody ReturnCreateRequestDto requestDto) {
+            @Valid @RequestBody ReturnCreateRequestDto requestDto
+    ) {
+        ReturnResponseDto response = returnRequestService.createReturnRequest(
+                userDetails.getUsername(),
+                requestDto
+        );
 
-        ReturnResponseDto response = returnRequestService.createReturnRequest(userDetails.getUsername(), requestDto);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponse.success(response));
     }
 
-    // 내 반품 내역 조회 API (일반 사용자)
+    /** 사용자 본인 반품 요청 목록 */
     @GetMapping
     public ResponseEntity<ApiResponse<List<ReturnResponseDto>>> getMyReturnRequests(
-            @AuthenticationPrincipal UserDetails userDetails) {
-
-        List<ReturnResponseDto> response = returnRequestService.getMyReturnRequests(userDetails.getUsername());
-        return ResponseEntity.ok(ApiResponse.success(response));
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        returnRequestService.getMyReturnRequests(userDetails.getUsername())
+                )
+        );
     }
 
-    // 반품/환불 처리 확정 API (관리자 전용)
+    /** 관리자 반품 요청 전체 목록 */
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin")
+    public ResponseEntity<ApiResponse<List<ReturnResponseDto>>> getAdminReturnRequests() {
+        return ResponseEntity.ok(
+                ApiResponse.success(returnRequestService.getAdminReturnRequests())
+        );
+    }
+
+    /** 관리자 승인 / 거절 */
     @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{returnId}/process")
     public ResponseEntity<ApiResponse<ReturnResponseDto>> processReturnRequest(
-            @PathVariable Long returnId,
-            @Valid @RequestBody ReturnProcessRequestDto requestDto) {
-
-        ReturnResponseDto response = returnRequestService.processReturnRequest(returnId, requestDto);
-        return ResponseEntity.ok(ApiResponse.success(response));
+    		@PathVariable("returnId") Long returnId,
+            @Valid @RequestBody ReturnProcessRequestDto requestDto
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        returnRequestService.processReturnRequest(returnId, requestDto)
+                )
+        );
     }
 }
