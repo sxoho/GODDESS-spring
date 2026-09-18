@@ -12,6 +12,7 @@ import java.util.List;
 public class ProductRequestDto {
     @NotNull private Long categoryId;
     @NotBlank @Size(max=200) private String name;
+    @Size(max=150) private String shortDescription;
     private String description;
     @NotNull @Min(0) private Integer price;
     @Min(0) @Max(100) private Integer discount;

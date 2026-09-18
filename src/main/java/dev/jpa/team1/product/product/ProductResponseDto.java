@@ -13,6 +13,7 @@ public class ProductResponseDto {
     private Long parentCategoryId;
     private String categoryName;
     private String name;
+    private String shortDescription;
     private String description;
     private Integer price;
     private Integer discount;
@@ -33,7 +34,7 @@ public class ProductResponseDto {
     public static ProductResponseDto from(Product p) {
         return new ProductResponseDto(p.getId(), p.getCategory().getId(),
                 p.getCategory().getParent()!=null?p.getCategory().getParent().getId():null,
-                p.getCategory().getName(), p.getName(), p.getDescription(), p.getPrice(), p.getDiscount(), p.getBrand(),
+                p.getCategory().getName(), p.getName(), p.getShortDescription(), p.getDescription(), p.getPrice(), p.getDiscount(), p.getBrand(),
                 p.getUsageInfo(), p.getAiApplyEnabled(), p.getProductType(), p.getVolume(), p.getSkinType(), p.getPersonalColor(),
                 p.getStatus(), p.getViewCount(), List.of(), List.of(), p.getCreatedAt(), p.getUpdatedAt());
     }

@@ -223,7 +223,7 @@ public class ProductService {
 
     @Transactional public ProductResponseDto save(ProductRequestDto d){
         Category category=categoryRepository.findById(d.getCategoryId()).orElseThrow(()->new IllegalArgumentException("Category not found. id="+d.getCategoryId()));
-        Product p=Product.builder().category(category).name(d.getName()).description(d.getDescription()).price(d.getPrice())
+        Product p=Product.builder().category(category).name(d.getName()).shortDescription(d.getShortDescription()).description(d.getDescription()).price(d.getPrice())
                 .discount(d.getDiscount()==null?0:d.getDiscount()).brand(d.getBrand()).usageInfo(d.getUsageInfo())
                 .aiApplyEnabled(d.getAiApplyEnabled()==null?"Y":d.getAiApplyEnabled()).productType(d.getProductType()).volume(d.getVolume())
                 .skinType(d.getSkinType()).personalColor(d.getPersonalColor()).status(d.getStatus()==null?"ON_SALE":d.getStatus()).build();
@@ -233,7 +233,7 @@ public class ProductService {
     @Transactional public ProductResponseDto update(Long id,ProductRequestDto d){
         Product p=repository.findById(id).orElseThrow(()->new IllegalArgumentException("Product not found. id="+id));
         Category c=categoryRepository.findById(d.getCategoryId()).orElseThrow(()->new IllegalArgumentException("Category not found. id="+d.getCategoryId()));
-        p.update(c,d.getName(),d.getDescription(),d.getPrice(),d.getDiscount(),d.getBrand(),d.getUsageInfo(),d.getAiApplyEnabled(),d.getProductType(),d.getVolume(),d.getSkinType(),d.getPersonalColor(),d.getStatus());
+        p.update(c,d.getName(),d.getShortDescription(),d.getDescription(),d.getPrice(),d.getDiscount(),d.getBrand(),d.getUsageInfo(),d.getAiApplyEnabled(),d.getProductType(),d.getVolume(),d.getSkinType(),d.getPersonalColor(),d.getStatus());
         return ProductResponseDto.from(p);
     }
     @Transactional public void stopSale(Long id){ repository.findById(id).orElseThrow().stopSale(); }

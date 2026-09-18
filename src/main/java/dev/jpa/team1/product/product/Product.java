@@ -27,6 +27,9 @@ public class Product {
     @Column(nullable = false, length = 200)
     private String name;
 
+    @Column(name = "short_description", length = 150)
+    private String shortDescription;
+
     @Lob
     private String description;
 
@@ -74,11 +77,12 @@ public class Product {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public void update(Category category, String name, String description, Integer price, Integer discount,
+    public void update(Category category, String name, String shortDescription, String description, Integer price, Integer discount,
                        String brand, String usageInfo, String aiApplyEnabled, String productType,
                        String volume, String skinType, String personalColor, String status) {
         this.category = category;
         this.name = name;
+        this.shortDescription = shortDescription;
         this.description = description;
         this.price = price;
         this.discount = discount == null ? 0 : discount;
