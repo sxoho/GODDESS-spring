@@ -3,6 +3,7 @@ package dev.jpa.team1.product.product;
 import dev.jpa.team1.product.category.Category;
 import dev.jpa.team1.product.category.CategoryRepository;
 import dev.jpa.team1.product.search.ProductSearchKeyword;
+import dev.jpa.team1.product.productcolorpersonalcolor.ProductColorPersonalColor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
@@ -85,18 +86,9 @@ public class ProductService {
     /**
      * 사용자 상품 목록 검색 조건.
      *
-     * skinType / personalColor는 PRODUCT 컬럼에
-     * "건성,복합성", "봄웜,여름쿨" 같은 comma-separated 문자열로 저장한다.
-     *
-     * React에서 여러 필터를 선택하면 요청도 comma-separated로 들어오므로,
-     * 같은 그룹 안에서는 OR, 서로 다른 그룹끼리는 AND로 검색한다.
-     *
-     * 예:
-     * skinType=건성,복합성
-     * personalColor=봄웜
-     *
-     * => (skinType LIKE '%건성%' OR skinType LIKE '%복합성%')
-     *    AND personalColor LIKE '%봄웜%'
+     * skinType은 PRODUCT.SKIN_TYPE의 comma-separated 문자열을 사용한다.
+     * personalColor는 PRODUCT_COLOR_PERSONAL_COLOR에서 색상 단위로 검색한다.
+     * 여러 퍼스널컬러를 선택하면 같은 그룹 안에서는 OR로 처리한다.
      */
     private Specification<Product> buildSearchSpecification(
             Long mainCategoryId,
@@ -155,13 +147,7 @@ public class ProductService {
                     skinType
             );
 
-            addCsvLikeFilter(
-                    conditions,
-                    cb,
-                    root,
-                    "personalColor",
-                    personalColor
-            );
+            addPersonalColorFilter(conditions, cb, root, query, personalColor);
 
             if (aiApplyEnabled != null && !aiApplyEnabled.isBlank()) {
                 conditions.add(
@@ -174,6 +160,49 @@ public class ProductService {
 
             return cb.and(conditions.toArray(new Predicate[0]));
         };
+    }
+
+
+    private void addPersonalColorFilter(
+            List<Predicate> conditions,
+            CriteriaBuilder cb,
+            Root<Product> root,
+            CriteriaQuery<?> query,
+            String requestValue
+    ) {
+        if (requestValue == null || requestValue.isBlank()) {
+            return;
+        }
+
+        List<String> values = Arrays.stream(requestValue.split(","))
+                .map(String::trim)
+                .filter(value -> !value.isBlank())
+                .toList();
+
+        if (values.isEmpty()) {
+            return;
+        }
+
+        Subquery<Long> subquery = query.subquery(Long.class);
+        Root<ProductColorPersonalColor> personalColorRoot =
+                subquery.from(ProductColorPersonalColor.class);
+
+        subquery.select(
+                personalColorRoot
+                        .get("productColor")
+                        .get("product")
+                        .get("id")
+        );
+
+        subquery.where(
+                personalColorRoot.get("personalColorType").in(values),
+                cb.equal(
+                        personalColorRoot.get("productColor").get("visible"),
+                        "Y"
+                )
+        );
+
+        conditions.add(root.get("id").in(subquery));
     }
 
 
@@ -226,14 +255,14 @@ public class ProductService {
         Product p=Product.builder().category(category).name(d.getName()).shortDescription(d.getShortDescription()).description(d.getDescription()).price(d.getPrice())
                 .discount(d.getDiscount()==null?0:d.getDiscount()).brand(d.getBrand()).usageInfo(d.getUsageInfo())
                 .aiApplyEnabled(d.getAiApplyEnabled()==null?"Y":d.getAiApplyEnabled()).productType(d.getProductType()).volume(d.getVolume())
-                .skinType(d.getSkinType()).personalColor(d.getPersonalColor()).status(d.getStatus()==null?"ON_SALE":d.getStatus()).build();
+                .skinType(d.getSkinType()).status(d.getStatus()==null?"ON_SALE":d.getStatus()).build();
         return ProductResponseDto.from(repository.save(p));
     }
 
     @Transactional public ProductResponseDto update(Long id,ProductRequestDto d){
         Product p=repository.findById(id).orElseThrow(()->new IllegalArgumentException("Product not found. id="+id));
         Category c=categoryRepository.findById(d.getCategoryId()).orElseThrow(()->new IllegalArgumentException("Category not found. id="+d.getCategoryId()));
-        p.update(c,d.getName(),d.getShortDescription(),d.getDescription(),d.getPrice(),d.getDiscount(),d.getBrand(),d.getUsageInfo(),d.getAiApplyEnabled(),d.getProductType(),d.getVolume(),d.getSkinType(),d.getPersonalColor(),d.getStatus());
+        p.update(c,d.getName(),d.getShortDescription(),d.getDescription(),d.getPrice(),d.getDiscount(),d.getBrand(),d.getUsageInfo(),d.getAiApplyEnabled(),d.getProductType(),d.getVolume(),d.getSkinType(),d.getStatus());
         return ProductResponseDto.from(p);
     }
     @Transactional public void stopSale(Long id){ repository.findById(id).orElseThrow().stopSale(); }

@@ -58,9 +58,6 @@ public class Product {
     @Column(name = "skin_type", length = 100)
     private String skinType;
 
-    @Column(name = "personal_color", length = 100)
-    private String personalColor;
-
     @Builder.Default
     @Column(nullable = false, length = 20)
     private String status = "ON_SALE";
@@ -79,7 +76,7 @@ public class Product {
 
     public void update(Category category, String name, String shortDescription, String description, Integer price, Integer discount,
                        String brand, String usageInfo, String aiApplyEnabled, String productType,
-                       String volume, String skinType, String personalColor, String status) {
+                       String volume, String skinType, String status) {
         this.category = category;
         this.name = name;
         this.shortDescription = shortDescription;
@@ -92,7 +89,6 @@ public class Product {
         this.productType = productType;
         this.volume = volume;
         this.skinType = skinType;
-        this.personalColor = personalColor;
         this.status = status == null ? "ON_SALE" : status;
     }
 

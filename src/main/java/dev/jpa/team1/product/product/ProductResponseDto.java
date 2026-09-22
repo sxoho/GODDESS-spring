@@ -23,7 +23,6 @@ public class ProductResponseDto {
     private String productType;
     private String volume;
     private String skinType;
-    private String personalColor;
     private String status;
     private Integer viewCount;
     private List<ProductColorResponseDto> colors;
@@ -35,7 +34,7 @@ public class ProductResponseDto {
         return new ProductResponseDto(p.getId(), p.getCategory().getId(),
                 p.getCategory().getParent()!=null?p.getCategory().getParent().getId():null,
                 p.getCategory().getName(), p.getName(), p.getShortDescription(), p.getDescription(), p.getPrice(), p.getDiscount(), p.getBrand(),
-                p.getUsageInfo(), p.getAiApplyEnabled(), p.getProductType(), p.getVolume(), p.getSkinType(), p.getPersonalColor(),
+                p.getUsageInfo(), p.getAiApplyEnabled(), p.getProductType(), p.getVolume(), p.getSkinType(),
                 p.getStatus(), p.getViewCount(), List.of(), List.of(), p.getCreatedAt(), p.getUpdatedAt());
     }
 }

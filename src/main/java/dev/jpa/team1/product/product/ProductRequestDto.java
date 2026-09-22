@@ -22,7 +22,6 @@ public class ProductRequestDto {
     @Size(max=30) private String productType;
     @Size(max=50) private String volume;
     @Size(max=100) private String skinType;
-    @Size(max=100) private String personalColor;
     @Size(max=20) private String status;
     @Valid private List<ProductColorRequestDto> colors;
     @Valid private List<ProductVariantRequestDto> variants;
