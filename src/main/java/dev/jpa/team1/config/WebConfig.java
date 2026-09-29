@@ -39,5 +39,16 @@ public class WebConfig
                 .addResourceLocations(
                         "file:uploads/member/"
                 );
+        
+        /**
+         * AI BEAUTY 결과 이미지
+         */
+        registry
+            .addResourceHandler(
+                "/images/beauty/**"
+            )
+            .addResourceLocations(
+                "file:uploads/beauty/"
+            );
     }
 }

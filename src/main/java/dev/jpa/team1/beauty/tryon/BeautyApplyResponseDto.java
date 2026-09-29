@@ -17,14 +17,15 @@ public class BeautyApplyResponseDto {
 
 
     /**
-     * LangGraph에서 어떤 경로로 실행했는지
+     * LangGraph 실행 경로
      *
      * base
      * lip
      * cheek
      * eye
+     * hair_style
+     * hair_color
      * combined_beauty
-     * ...
      */
     private String route;
 
@@ -51,4 +52,23 @@ public class BeautyApplyResponseDto {
      * 결과 파일명
      */
     private String resultFileName;
+
+
+    /**
+     * DB 저장된 AI BEAUTY 실행 ID
+     *
+     * BEAUTY_TRYON.beautytryon_id
+     */
+    private Long beautyTryonId;
+
+
+    /**
+     * DB 저장된 AI 결과 ID
+     *
+     * BEAUTY_TRYON_RESULT.beautyresult_id
+     *
+     * 이후 결과 저장 버튼에서
+     * BEAUTY_SAVE 연결에 사용
+     */
+    private Long beautyResultId;
 }
