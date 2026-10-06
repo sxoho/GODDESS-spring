@@ -10,6 +10,8 @@ import dev.jpa.team1.beauty.tryonitem.BeautyTryonItemRepository;
 import dev.jpa.team1.beauty.tryonresult.BeautyTryonResult;
 import dev.jpa.team1.beauty.tryonresult.BeautyTryonResultRepository;
 
+import dev.jpa.team1.beauty.aiusagehistory.AiUsageHistoryService;
+
 import dev.jpa.team1.member.memberphoto.MemberPhoto;
 import dev.jpa.team1.member.memberphoto.MemberPhotoRepository;
 
@@ -56,6 +58,8 @@ public class BeautyTryonService {
     private final ProductRepository productRepository;
 
     private final ProductColorRepository productColorRepository;
+
+    private final AiUsageHistoryService aiUsageHistoryService;
 
     private final ObjectMapper objectMapper;
 
@@ -150,7 +154,18 @@ public class BeautyTryonService {
 
 
         /* =========================================
-           2. 회원 대표사진 조회
+           2. 헤어 AI 무료 사용 횟수 확인
+        ========================================= */
+
+        aiUsageHistoryService.validateHairUsageAvailable(
+            requestDto.getMemberId(),
+            requestDto.getHairStyle(),
+            requestDto.getHairColor()
+        );
+
+
+        /* =========================================
+           3. 회원 대표사진 조회
         ========================================= */
 
         MemberPhoto memberPhoto =
@@ -788,7 +803,18 @@ public class BeautyTryonService {
 
 
             /* =========================================
-               12. React 응답
+               12. 헤어 AI 사용 이력 저장
+            ========================================= */
+
+            aiUsageHistoryService.saveHairUsage(
+                memberPhoto.getMember(),
+                requestDto.getHairStyle(),
+                requestDto.getHairColor()
+            );
+
+
+            /* =========================================
+               13. React 응답
             ========================================= */
 
             return new BeautyApplyResponseDto(
