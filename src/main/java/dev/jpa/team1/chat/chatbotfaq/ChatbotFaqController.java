@@ -3,9 +3,7 @@ package dev.jpa.team1.chat.chatbotfaq;
 import dev.jpa.team1.common.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -14,11 +12,34 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ChatbotFaqController {
 
-    private final ChatbotFaqService chatbotFaqService;
+    private final ChatbotFaqService
+            chatbotFaqService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<ChatbotFaqResponseDto>>> getFaqList() {
-        List<ChatbotFaqResponseDto> response = chatbotFaqService.getVisibleFaqs();
-        return ResponseEntity.ok(ApiResponse.success(response));
+    public ResponseEntity<
+            ApiResponse<
+                    List<ChatbotFaqResponseDto>
+            >
+            >
+    getFaqList(
+
+            @RequestParam(
+                    name = "category",
+                    required = false
+            )
+            String category
+
+    ) {
+
+        return ResponseEntity.ok(
+
+                ApiResponse.success(
+
+                        chatbotFaqService
+                                .getVisibleFaqs(
+                                        category
+                                )
+                )
+        );
     }
 }

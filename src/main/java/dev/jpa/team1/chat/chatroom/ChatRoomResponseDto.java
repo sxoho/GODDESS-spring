@@ -1,51 +1,72 @@
 package dev.jpa.team1.chat.chatroom;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Getter
-@Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChatRoomResponseDto {
+
     private Long id;
 
     private Long memberId;
 
-    private String memberName;
-
-    private Long counselorId;
-
-    private Long productId;
-
-    private Long orderId;
-
-    private String chatType;
+    private String memberNickname;
 
     private String status;
 
     private LocalDateTime createdAt;
 
-    private LocalDateTime closedDate;
+    private LocalDateTime updatedAt;
+
+    private LocalDateTime closedAt;
 
 
-    public static ChatRoomResponseDto from(ChatRoom chatRoom) {
-        return new ChatRoomResponseDto(
-                chatRoom.getId(),
-                chatRoom.getMember().getId(),
-                chatRoom.getMember().getName(),
-                chatRoom.getCounselor() != null ? chatRoom.getCounselor().getId() : null,
-                chatRoom.getProduct() != null ? chatRoom.getProduct().getId() : null,
-                chatRoom.getOrders() != null ? chatRoom.getOrders().getId() : null,
-                chatRoom.getChatType(),
-                chatRoom.getStatus(),
-                chatRoom.getCreatedAt(),
-                chatRoom.getClosedDate()
-        );
+    public static ChatRoomResponseDto from(
+            ChatRoom chatRoom
+    ) {
+
+        return ChatRoomResponseDto
+                .builder()
+
+                .id(
+                        chatRoom.getId()
+                )
+
+                .memberId(
+                        chatRoom
+                                .getMember()
+                                .getId()
+                )
+
+                .memberNickname(
+                        chatRoom
+                                .getMember()
+                                .getNickname()
+                )
+
+                .status(
+                        chatRoom.getStatus()
+                )
+
+                .createdAt(
+                        chatRoom.getCreatedAt()
+                )
+
+                .updatedAt(
+                        chatRoom.getUpdatedAt()
+                )
+
+                .closedAt(
+                        chatRoom.getClosedAt()
+                )
+
+                .build();
     }
-
 }

@@ -36,14 +36,16 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration configuration) throws Exception {
+            AuthenticationConfiguration configuration
+    ) throws Exception {
 
         return configuration.getAuthenticationManager();
     }
 
     @Bean
     public SecurityFilterChain filterChain(
-            HttpSecurity http) throws Exception {
+            HttpSecurity http
+    ) throws Exception {
 
         http
                 .csrf(AbstractHttpConfigurer::disable)
@@ -71,6 +73,7 @@ public class SecurityConfig {
                 .exceptionHandling(exception ->
                         exception.authenticationEntryPoint(
                                 (request, response, authException) -> {
+
                                     response.setStatus(
                                             HttpServletResponse.SC_UNAUTHORIZED
                                     );
@@ -80,25 +83,47 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
-                        .requestMatchers(
-                                "/api/auth/**"
-                        ).permitAll()
+                        // .requestMatchers(
+                        //         "/api/auth/**"
+                        // ).permitAll()
+
 
                         .requestMatchers(
                                 "/api/commerce/cart/**"
                         ).authenticated()
 
+
                         .requestMatchers(
                                 "/api/commerce/orders/**"
                         ).authenticated()
+
 
                         .requestMatchers(
                                 "/api/commerce/payment/**"
                         ).authenticated()
 
+
                         .requestMatchers(
                                 "/api/commerce/admin/orders/**"
                         ).authenticated()
+
+
+                        /*
+                         * =========================================
+                         * CHATBOT
+                         * =========================================
+                         *
+                         * 현재 Swagger 테스트 단계에서는
+                         * JWT 인증을 사용하지 않고
+                         * memberId를 직접 전달하여 테스트한다.
+                         *
+                         * React 챗봇 연결 완료 후
+                         * 다시 authenticated() 적용 예정.
+                         */
+                        // .requestMatchers(
+                        //         "/api/chat/**"
+                        // ).authenticated()
+
 
                         .anyRequest().permitAll()
                 )

@@ -3,38 +3,31 @@ package dev.jpa.team1.chat.chatbotfaq;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
-
 @Getter
 @Builder
 public class ChatbotFaqResponseDto {
 
     private Long id;
-
-    private Long categoryId;
-
+    private String category;
     private String question;
-
     private String answer;
+    private String keywords;
+    private Integer displayOrder;
 
-    private Integer viewCount;
+    public static ChatbotFaqResponseDto from(
+            ChatbotFaq faq
+    ) {
 
-    private String visible;
-
-    private LocalDateTime createdAt;
-
-    private LocalDateTime updatedAt;
-
-    public static ChatbotFaqResponseDto from(ChatbotFaq faq) {
-        return new ChatbotFaqResponseDto(
-                faq.getId(),
-                faq.getCategoryId(),
-                faq.getQuestion(),
-                faq.getAnswer(),
-                faq.getViewCount(),
-                faq.getVisible(),
-                faq.getCreatedAt(),
-                faq.getUpdatedAt()
-        );
+        return ChatbotFaqResponseDto
+                .builder()
+                .id(faq.getId())
+                .category(faq.getCategory())
+                .question(faq.getQuestion())
+                .answer(faq.getAnswer())
+                .keywords(faq.getKeywords())
+                .displayOrder(
+                        faq.getDisplayOrder()
+                )
+                .build();
     }
 }
