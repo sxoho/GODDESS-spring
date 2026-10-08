@@ -2,27 +2,37 @@ package dev.jpa.team1.chat.chatmessage;
 
 import dev.jpa.team1.chat.chatroom.ChatRoom;
 import dev.jpa.team1.chat.chatroom.ChatRoomRepository;
+
 import dev.jpa.team1.exception.CustomException;
 import dev.jpa.team1.exception.ErrorCode;
+
+import dev.jpa.team1.member.member.Member;
 import dev.jpa.team1.member.member.MemberRepository;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+
 @Service
 @RequiredArgsConstructor
 public class ChatMessageService {
 
+
     private final ChatMessageRepository
             chatMessageRepository;
+
 
     private final ChatRoomRepository
             chatRoomRepository;
 
+
     private final MemberRepository
             memberRepository;
+
 
     private final ChatbotAiService
             chatbotAiService;
@@ -44,6 +54,7 @@ public class ChatMessageService {
             ChatMessageSendRequestDto requestDto
 
     ) {
+
 
         ChatRoom chatRoom =
                 getAccessibleActiveRoom(
@@ -98,6 +109,7 @@ public class ChatMessageService {
 
     ) {
 
+
         /*
          * 해당 회원의 채팅방인지 먼저 확인
          */
@@ -138,6 +150,7 @@ public class ChatMessageService {
 
     ) {
 
+
         ChatRoom chatRoom =
                 chatRoomRepository
 
@@ -158,6 +171,7 @@ public class ChatMessageService {
                         chatRoom.getStatus()
                 )
         ) {
+
 
             throw new CustomException(
 
@@ -199,11 +213,12 @@ public class ChatMessageService {
      * =========================================
      * AI 챗봇 질문
      *
-     * 1. 회원 채팅방 확인
-     * 2. USER 질문 저장
-     * 3. FastAPI 호출
-     * 4. BOT 답변 저장
-     * 5. USER + BOT + ACTION 반환
+     * 1. 회원 조회
+     * 2. 회원 채팅방 확인
+     * 3. USER 질문 저장
+     * 4. 피부타입 / 퍼스널컬러 포함하여 FastAPI 호출
+     * 5. BOT 답변 저장
+     * 6. USER + BOT + ACTION 반환
      * =========================================
      */
     @Transactional
@@ -218,9 +233,38 @@ public class ChatMessageService {
 
     ) {
 
+
         /*
-         * 회원이 접근 가능한
-         * ACTIVE 채팅방인지 확인
+         * =====================================
+         * 회원 조회
+         * =====================================
+         *
+         * 여기에서 MEMBER 테이블의
+         *
+         * SKIN_TYPE
+         * PERSONAL_COLOR
+         *
+         * 값을 가져온다.
+         */
+        Member member =
+                memberRepository
+
+                        .findById(
+                                memberId
+                        )
+
+                        .orElseThrow(
+                                () ->
+                                        new CustomException(
+                                                ErrorCode.MEMBER_NOT_FOUND
+                                        )
+                        );
+
+
+        /*
+         * =====================================
+         * 회원이 접근 가능한 ACTIVE 채팅방 확인
+         * =====================================
          */
         ChatRoom chatRoom =
                 getAccessibleActiveRoom(
@@ -231,7 +275,9 @@ public class ChatMessageService {
 
         String question =
                 requestDto
+
                         .getMessage()
+
                         .trim();
 
 
@@ -270,7 +316,27 @@ public class ChatMessageService {
 
         /*
          * =====================================
-         * FastAPI -> Ollama 질문
+         * 회원 개인화 정보
+         * =====================================
+         */
+        String skinType =
+                member.getSkinType();
+
+
+        String personalColor =
+                member.getPersonalColor();
+
+
+        /*
+         * =====================================
+         * FastAPI -> LangChain -> Ollama 질문
+         *
+         * FastAPI로 전달:
+         *
+         * roomId
+         * message
+         * skinType
+         * personalColor
          * =====================================
          */
         ChatbotAiService.AiAnswer
@@ -279,7 +345,11 @@ public class ChatMessageService {
 
                         roomId,
 
-                        question
+                        question,
+
+                        skinType,
+
+                        personalColor
                 );
 
 
@@ -355,6 +425,7 @@ public class ChatMessageService {
 
     ) {
 
+
         ChatRoom chatRoom =
                 getAccessibleRoom(
                         memberId,
@@ -367,6 +438,7 @@ public class ChatMessageService {
                         chatRoom.getStatus()
                 )
         ) {
+
 
             throw new CustomException(
 
@@ -394,6 +466,7 @@ public class ChatMessageService {
             Long roomId
 
     ) {
+
 
         /*
          * 회원 존재 여부 확인
@@ -441,6 +514,7 @@ public class ChatMessageService {
                                 memberId
                         )
         ) {
+
 
             throw new CustomException(
                     ErrorCode.INVALID_CHAT_ACCESS

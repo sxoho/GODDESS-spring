@@ -60,7 +60,7 @@ public class CustomerQnaService {
      * application.properties에 값이 없으면
      * 기본적으로 localhost:11102 사용
      */
-    @Value("${CUSTOMER_QNA_LLM_BASE_URL:http://localhost:11102}")
+    @Value("${CUSTOMER_QNA_LLM_BASE_URL:http://139.150.91.194:11504}")
     private String customerQnaLlmBaseUrl;
 
 
