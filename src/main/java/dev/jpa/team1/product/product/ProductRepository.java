@@ -166,6 +166,21 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
      * 카테고리 삭제 전 사용 여부 확인용
      */
     boolean existsByCategory_Id(Long categoryId);
+    
+    /**
+     * 챗봇 상품 추천용
+     *
+     * 상품 유형 + 판매중 상품 조회
+     *
+     * 예:
+     * productType = LIP
+     * status = ON_SALE
+     */
+    List<Product>
+    findByProductTypeIgnoreCaseAndStatusOrderByViewCountDesc(
+            String productType,
+            String status
+    );
 
 
 }

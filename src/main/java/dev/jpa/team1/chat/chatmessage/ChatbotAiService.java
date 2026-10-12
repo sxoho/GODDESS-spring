@@ -21,16 +21,6 @@ public class ChatbotAiService {
      * =========================================
      * FastAPI 챗봇 서버
      * =========================================
-     *
-     * 팀5 포트 범위:
-     * 11500 ~ 11599
-     *
-     * AI BEAUTY:
-     * 11502
-     *
-     * LangChain RAG 챗봇:
-     * 11503
-     * =========================================
      */
     @Value(
             "${chatbot.fastapi.url:http://139.150.91.194:11503}"
@@ -48,15 +38,6 @@ public class ChatbotAiService {
     /*
      * =========================================
      * FastAPI 챗봇 질문
-     *
-     * Spring
-     * -> FastAPI
-     *
-     * 전달 값:
-     * roomId
-     * message
-     * skinType
-     * personalColor
      * =========================================
      */
     public AiAnswer ask(
@@ -105,10 +86,6 @@ public class ChatbotAiService {
                     response.getBody();
 
 
-            /*
-             * FastAPI 응답이 없거나
-             * 답변 문자열이 비어있는 경우
-             */
             if (
                     body == null
                     ||
@@ -122,21 +99,22 @@ public class ChatbotAiService {
 
                         "답변을 생성하지 못했습니다. 잠시 후 다시 질문해주세요.",
 
+                        null,
+
                         null
                 );
             }
 
 
-            /*
-             * 정상 응답
-             */
             return new AiAnswer(
 
                     body
                             .getMessage()
                             .trim(),
 
-                    body.getAction()
+                    body.getAction(),
+
+                    body.getProductRecommendation()
             );
 
 
@@ -145,15 +123,6 @@ public class ChatbotAiService {
         ) {
 
 
-            /*
-             * =====================================
-             * FastAPI 연결 오류
-             * =====================================
-             *
-             * 사용자 질문은 이미 DB에 저장된 상태이고
-             * FastAPI 호출에 실패한 경우
-             * BOT 안내 메시지를 반환한다.
-             */
             System.err.println(
 
                     "FastAPI 챗봇 호출 오류: "
@@ -165,6 +134,8 @@ public class ChatbotAiService {
 
                     "현재 AI 챗봇 서버와 연결할 수 없습니다. 잠시 후 다시 이용해주세요.",
 
+                    null,
+
                     null
             );
         }
@@ -174,15 +145,6 @@ public class ChatbotAiService {
     /*
      * =========================================
      * Spring -> FastAPI 요청
-     *
-     * 실제 JSON:
-     *
-     * {
-     *   "roomId": 1,
-     *   "message": "내 피부 타입에 맞는 관리법 알려줘",
-     *   "skinType": "DRY",
-     *   "personalColor": "SPRING_WARM"
-     * }
      * =========================================
      */
     @Getter
@@ -201,16 +163,32 @@ public class ChatbotAiService {
 
     /*
      * =========================================
-     * FastAPI -> Spring 응답
+     * FastAPI 상품 추천 조건
+     *
+     * 예:
      *
      * {
-     *   "message": "...",
-     *   "action": {
-     *       "type": "NAVIGATE",
-     *       "label": "...",
-     *       "path": "..."
-     *   }
+     *   "personalColor": "SUMMER_COOL",
+     *   "productType": "LIP",
+     *   "limit": 3
      * }
+     * =========================================
+     */
+    @Getter
+    @NoArgsConstructor
+    public static class ProductRecommendation {
+
+        private String personalColor;
+
+        private String productType;
+
+        private Integer limit;
+    }
+
+
+    /*
+     * =========================================
+     * FastAPI -> Spring 응답
      * =========================================
      */
     @Getter
@@ -220,12 +198,14 @@ public class ChatbotAiService {
         private String message;
 
         private ChatbotActionDto action;
+
+        private ProductRecommendation productRecommendation;
     }
 
 
     /*
      * =========================================
-     * ChatMessageService로 전달할 결과
+     * ChatMessageService로 전달
      * =========================================
      */
     @Getter
@@ -235,5 +215,7 @@ public class ChatbotAiService {
         private String message;
 
         private ChatbotActionDto action;
+
+        private ProductRecommendation productRecommendation;
     }
 }

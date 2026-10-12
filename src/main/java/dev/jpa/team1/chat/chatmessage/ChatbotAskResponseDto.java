@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Getter
 @Builder
 @NoArgsConstructor
@@ -16,4 +18,10 @@ public class ChatbotAskResponseDto {
     private ChatMessageResponseDto botMessage;
 
     private ChatbotActionDto action;
+
+    /*
+     * 챗봇이 추천하는
+     * 실제 여신강림 등록 상품
+     */
+    private List<ChatbotRecommendedProductDto> recommendedProducts;
 }
