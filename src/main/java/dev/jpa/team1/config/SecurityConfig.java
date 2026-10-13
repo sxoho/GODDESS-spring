@@ -87,26 +87,21 @@ public class SecurityConfig {
                         //         "/api/auth/**"
                         // ).permitAll()
 
-
                         .requestMatchers(
                                 "/api/commerce/cart/**"
                         ).authenticated()
-
 
                         .requestMatchers(
                                 "/api/commerce/orders/**"
                         ).authenticated()
 
-
                         .requestMatchers(
                                 "/api/commerce/payment/**"
                         ).authenticated()
 
-
                         .requestMatchers(
                                 "/api/commerce/admin/orders/**"
                         ).authenticated()
-
 
                         /*
                          * =========================================
@@ -123,7 +118,6 @@ public class SecurityConfig {
                         // .requestMatchers(
                         //         "/api/chat/**"
                         // ).authenticated()
-
 
                         .anyRequest().permitAll()
                 )
@@ -144,13 +138,15 @@ public class SecurityConfig {
         CorsConfiguration configuration =
                 new CorsConfiguration();
 
-        configuration.setAllowedOrigins(
-                List.of(
-                        "http://localhost:5173",
-                        "http://localhost:5174",
-                        "http://localhost:3000",
-                        "http://localhost:8501"
-                )
+        /*
+         * 개발 환경 CORS 전체 허용
+         *
+         * allowCredentials(true)를 사용하고 있으므로
+         * setAllowedOrigins("*") 대신
+         * setAllowedOriginPatterns("*")를 사용한다.
+         */
+        configuration.setAllowedOriginPatterns(
+                List.of("*")
         );
 
         configuration.setAllowedMethods(
